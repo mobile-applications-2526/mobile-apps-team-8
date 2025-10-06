@@ -1,12 +1,16 @@
-import { GlobalStyles } from '@/styles/global';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { useRouter } from 'expo-router';
+import { GlobalStyles } from '@/styles/global';
 
 export default function HomeScreen() {
+  const router = useRouter();
+    const mode = useColorScheme() || 'light';   
+  const styles = GlobalStyles(mode);   
+
   return (
-    <View style={GlobalStyles.container}>
-      <Text style={GlobalStyles.title}>Mobile Applications</Text>
-      <Text style={GlobalStyles.subtitle}>The App</Text>
+    <View style={[styles.container]}>
+      <Text style={styles.title}>Welcome</Text>      
     </View>
   );
 }
