@@ -84,7 +84,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: theme.accent }]}
-          // onPress={() => router.push('/(tabs)/journal')}
+          onPress={() => router.push('/(tabs)/journal')}
         >
           <Plus color={theme.primaryForeground} size={24} />
           <Text style={[styles.actionText, { color: theme.primaryForeground }]}>New Entry</Text>
