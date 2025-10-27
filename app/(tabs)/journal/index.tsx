@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { SafeAreaView, Text, ScrollView, FlatList, useColorScheme, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, GlobalStyles } from '@/styles/global';
 import { useRouter } from 'expo-router';
-import { GlobalStyles, Colors } from '@/styles/global';
+import React, { useEffect, useState } from 'react';
+import { Button, FlatList, Text, useColorScheme, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+
+import { JournalEntryCard } from '@/components/journal/JournalEntryCard';
 import { JournalHeader } from '@/components/journal/JournalHeader';
 import { JournalSearch } from '@/components/journal/JournalSearch';
 import { MoodFilter } from '@/components/journal/MoodFilter';
-import { JournalEntryCard } from '@/components/journal/JournalEntryCard';
+import { NewEntryForm } from '@/components/journal/NewEntryForm';
+import { getAllJournalEntries, initDB } from '@/database';
 
 export interface JournalEntry {
   id: string;
@@ -20,62 +23,35 @@ export interface JournalEntry {
   tags: string[];
 }
 
-const journalEntries: JournalEntry[] = [
-  {
-    id: '1',
-    title: 'Morning reflections',
-    content:
-      'Today I felt more centered after my morning walk. The quiet moments in nature really help me process my thoughts and set intentions for the day ahead...',
-    mood: 'calm',
-    moodColor: '#A8E6CF',
-    moodIcon: '😌',
-    date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    tags: ['morning', 'nature', 'mindfulness'],
-  },
-  {
-    id: '2',
-    title: 'Grateful moments',
-    content:
-      'Reflecting on the small joys today - a good conversation with a friend, the warmth of my coffee, and the way sunlight streamed through my window...',
-    mood: 'grateful',
-    moodColor: '#FFE66D',
-    moodIcon: '🙏',
-    date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    tags: ['gratitude', 'friendship', 'joy'],
-  },
-  {
-    id: '3',
-    title: 'Working through anxiety',
-    content:
-      'Had some challenging moments today with work stress. Used breathing exercises and tried to practice self-compassion. Progress, not perfection...',
-    mood: 'anxious',
-    moodColor: '#FFB3BA',
-    moodIcon: '😰',
-    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    tags: ['anxiety', 'work', 'coping', 'self-care'],
-  },
-  {
-    id: '4',
-    title: 'Evening peace',
-    content:
-      'Tonight I feel at peace. Spent time reading and listening to soft music. These quiet evening rituals are becoming precious to me...',
-    mood: 'peaceful',
-    moodColor: '#B3D9FF',
-    moodIcon: '☮️',
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-    tags: ['evening', 'peace', 'rituals', 'music'],
-  },
-];
+
 
 export default function JournalScreen() {
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    initDB();
+    const loadEntries = () => {
+      const data = getAllJournalEntries();
+      setEntries(data);
+    };
+    loadEntries();
+  }, []);
+
+  const refreshEntries = () => {
+    const data = getAllJournalEntries();
+    setEntries(data);
+  };
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const mode = useColorScheme() || 'light';
   const theme = Colors[mode];
   const global = GlobalStyles(mode);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const moodIcons: { [key: string]: string } = {
     happy: '😊',
@@ -88,13 +64,13 @@ export default function JournalScreen() {
     grateful: '🙏',
   };
 
-  const uniqueMoods = Array.from(new Set(journalEntries.map((entry) => entry.mood)));
+  const uniqueMoods = Array.from(new Set(entries.map((entry) => entry.mood)));
 
-  const filteredEntries = journalEntries.filter((entry) => {
+  const filteredEntries = entries.filter((entry) => {
     const matchesSearch =
       entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      entry.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesMood = !selectedMood || entry.mood === selectedMood;
     return matchesSearch && matchesMood;
   });
@@ -102,6 +78,22 @@ export default function JournalScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <JournalHeader router={router} global={global} insets={insets} />
+
+      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
+        <Button
+          title={showForm ? 'Close Form' : 'Add New Entry'}
+          onPress={() => setShowForm(!showForm)}
+        />
+      </View>
+
+      {showForm && (
+        <NewEntryForm
+          onEntryAdded={() => {
+            refreshEntries();
+            setShowForm(false);
+          }}
+        />
+      )}
 
       <JournalSearch
         searchQuery={searchQuery}
@@ -132,6 +124,7 @@ export default function JournalScreen() {
               theme={theme}
               global={global}
               router={router}
+              // refreshEntries={refreshEntries} // optional: for delete functionality
             />
           )}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}

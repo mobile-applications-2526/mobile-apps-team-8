@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { SafeAreaView, KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
+import { Colors, GlobalStyles } from '@/styles/global';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GlobalStyles, Colors } from '@/styles/global';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 import { ChatHeader } from '@/components/chat/ChatHeader';
-import { MessageList } from '@/components/chat/MessageList';
 import { ChatInput } from '@/components/chat/ChatInput';
+import { MessageList } from '@/components/chat/MessageList';
 
 export interface Message {
   id: string;
