@@ -1,20 +1,24 @@
-import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { GlobalStyles, Colors } from '@/styles/global';
-import { useColorScheme } from 'react-native';
-
 import { AnalyticsHeader } from '@/components/analytics/AnalyticsHeader';
+import { InsightList } from '@/components/analytics/InsightList';
 import { MoodJourney } from '@/components/analytics/MoodJourney';
 import { StreakCards } from '@/components/analytics/StreakCards';
-import { InsightList } from '@/components/analytics/InsightList';
+import { Colors, GlobalStyles } from '@/styles/global';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AnalyticsScreen() {
   const router = useRouter();
   const mode = useColorScheme() || 'light';
   const theme = Colors[mode];
   const global = GlobalStyles(mode);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('userToken');
+    router.replace('/login');
+  };
 
   const moodJourney = [
     { week: 'Week 1', avg: 6.2, color: '#FFB3BA' },
@@ -78,6 +82,12 @@ export default function AnalyticsScreen() {
         <MoodJourney global={global} />
         <StreakCards streaks={streaks} global={global} />
         <InsightList insights={insights} global={global} />
+
+        <View style={{ marginTop: 40, alignItems: 'center' }}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -87,5 +97,19 @@ const styles = StyleSheet.create({
   scrollContainer: {
     padding: 16,
     paddingBottom: 40,
+  },
+  logoutButton: {
+    backgroundColor: '#D86B6B',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+  logoutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
