@@ -83,11 +83,6 @@ export default function AnalyticsScreen() {
         <StreakCards streaks={streaks} global={global} />
         <InsightList insights={insights} global={global} />
 
-        <View style={{ marginTop: 40, alignItems: 'center' }}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Log Out</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
