@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { FlatList } from 'react-native';
-import { MessageBubble } from './MessageBubble';
+import React, { useRef, useEffect } from "react";
+import { FlatList } from "react-native";
+import { MessageBubble } from "./MessageBubble";
 
 interface Message {
   id: string;
@@ -25,10 +25,13 @@ export function MessageList({ messages }: MessageListProps) {
       ref={flatListRef}
       data={messages}
       renderItem={({ item }) => (
-        <MessageBubble text={item.text} isUser={item.isUser} timestamp={item.timestamp} />
+        <MessageBubble
+          text={item.text}
+          isUser={item.isUser}
+          timestamp={item.timestamp}
+        />
       )}
       keyExtractor={(item) => item.id}
-      contentContainerStyle={{ padding: 16, paddingBottom: 12 }}
     />
   );
 }
