@@ -6,7 +6,7 @@ export const Colors: Record<ThemeMode, Record<string, string>> = {
   light: {
     background: '#F5F1E8',
     foreground: '#3C4142',
-    card: 'rgba(255, 255, 255, 0.7)',
+    card: 'rgba(255, 255, 255, 1)',
     cardForeground: '#3C4142',
     primary: '#A8B5A0',
     primaryForeground: '#F5F1E8',
@@ -14,7 +14,7 @@ export const Colors: Record<ThemeMode, Record<string, string>> = {
     secondaryForeground: '#3C4142',
     accent: '#D4A59A',
     border: 'rgba(168, 181, 160, 0.2)',
-    input: 'rgba(255, 255, 255, 0.5)',
+    input: 'rgba(255, 255, 255, 0.8)',
   },
   dark: {
     background: '#1A1B2E',
