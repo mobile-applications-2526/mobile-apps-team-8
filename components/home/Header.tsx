@@ -1,12 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, useColorScheme, StyleSheet } from 'react-native';
 import { MotiView } from 'moti';
 import { Sparkles } from 'lucide-react-native';
 import { Colors } from '@/styles/global';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export function HomeHeader() {
   const mode = useColorScheme() || 'light';
   const theme = Colors[mode];
+
+  const [username, setUsername] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem('loggedInUser');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          setUsername(parsed.username || null);
+        }
+      } catch (error) {
+        console.error('Failed to load user from storage', error);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const currentHour = new Date().getHours();
   const greeting =
@@ -26,7 +46,8 @@ export function HomeHeader() {
       <View style={styles.headerRow}>
         <View>
           <Text style={[styles.greeting, { color: theme.foreground }]}>
-            {greeting}, Alex
+            {greeting}
+            {username ? `, ${username}` : ''}
           </Text>
           <Text style={[styles.subtitle, { color: theme.accent }]}>
             How are you feeling today?

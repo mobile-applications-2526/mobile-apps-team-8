@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const styles = createLoginStyles('light'); 
@@ -22,7 +22,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const user = { username, password };
+      const user = { email, password };
       const response = await UserService.loginUser(user);
 
       if (response.ok) {
@@ -75,13 +75,13 @@ export default function LoginScreen() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Username</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              placeholder="Enter your username"
+              placeholder="Enter your emai"
               placeholderTextColor="rgba(60, 65, 66, 0.4)"
               style={styles.input}
-              value={username}
-              onChangeText={setUsername}
+              value={email}
+              onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
             />

@@ -10,7 +10,8 @@ import { JournalHeader } from '@/components/journal/JournalHeader';
 import { JournalSearch } from '@/components/journal/JournalSearch';
 import { MoodFilter } from '@/components/journal/MoodFilter';
 import { NewEntryForm } from '@/components/journal/NewEntryForm';
-import { getAllJournalEntries, initDB } from '@/database';
+import { getAllJournalEntries, getAllJournalEntriesForUser, initDB } from '@/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface JournalEntry {
   id: string;
@@ -21,6 +22,7 @@ export interface JournalEntry {
   moodIcon: string;
   date: Date;
   tags: string[];
+  username: string
 }
 
 
@@ -30,19 +32,29 @@ export default function JournalScreen() {
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null); 
+
 
 
   useEffect(() => {
-    initDB();
-    const loadEntries = () => {
-      const data = getAllJournalEntries();
-      setEntries(data);
+    const loadEntries = async () => {
+      initDB();
+      const storedUser = await AsyncStorage.getItem('loggedInUser');
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+      if (parsedUser?.username) {
+        setUsername(parsedUser.username);
+        const data = getAllJournalEntriesForUser(parsedUser.username);
+        setEntries(data);
+      }
     };
+
     loadEntries();
   }, []);
 
   const refreshEntries = () => {
-    const data = getAllJournalEntries();
+    if (!username) return;
+    const data = getAllJournalEntriesForUser(username);
     setEntries(data);
   };
 

@@ -13,6 +13,7 @@ export function initDB() {
       moodIcon TEXT NOT NULL,
       tags TEXT,
       date INTEGER NOT NULL,
+      username TEXT NOT NULL,
       synced INTEGER DEFAULT 0,
       backend_id TEXT
     );`
@@ -28,6 +29,7 @@ export function addJournalEntry(entry: {
   moodIcon: string;
   tags: string[];
   date: number; 
+  username: string;
 }) {
   const title = entry.title.replace(/'/g, "''");
   const content = entry.content.replace(/'/g, "''");
@@ -35,10 +37,11 @@ export function addJournalEntry(entry: {
   const moodColor = entry.moodColor.replace(/'/g, "''");
   const moodIcon = entry.moodIcon.replace(/'/g, "''");
   const tags = entry.tags.join(',').replace(/'/g, "''");
+  const username = entry.username.replace(/'/g, "''");
 
   db.execSync(
-    `INSERT INTO journal_entries (title, content, mood, moodColor, moodIcon, tags, date)
-     VALUES ('${title}', '${content}', '${mood}', '${moodColor}', '${moodIcon}', '${tags}', ${entry.date})`
+    `INSERT INTO journal_entries (title, content, mood, moodColor, moodIcon, tags, date, username)
+     VALUES ('${title}', '${content}', '${mood}', '${moodColor}', '${moodIcon}', '${tags}', ${entry.date}, '${username}')`
   );
 }
 
@@ -50,6 +53,19 @@ export function getAllJournalEntries(): any[] {
     date: new Date(row.date),
   }));
 }
+
+export const getAllJournalEntriesForUser = (username: string) => {
+  const rows = db.getAllSync<any>(
+    `SELECT * FROM journal_entries WHERE username = '${username.replace(/'/g, "''")}' ORDER BY date DESC`
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    tags: row.tags ? row.tags.split(',') : [],
+    date: new Date(row.date),
+  }));
+};
+
 
 export function deleteJournalEntry(id: number) {
   db.execSync(`DELETE FROM journal_entries WHERE id = ${id}`);

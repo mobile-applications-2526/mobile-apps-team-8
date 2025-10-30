@@ -1,6 +1,7 @@
 import { addJournalEntry } from '@/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface NewEntryFormProps {
   onEntryAdded: () => void; 
@@ -23,21 +24,32 @@ export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded }) => {
   const [tags, setTags] = useState('');
   const [selectedMood, setSelectedMood] = useState(moodOptions[0]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title || !content) {
       alert('Please fill in title and content');
       return;
     }
 
-    addJournalEntry({
-      title,
-      content,
-      mood: selectedMood.mood,
-      moodColor: selectedMood.color,
-      moodIcon: selectedMood.icon,
-      tags: tags.split(',').map(t => t.trim()),
-      date: Date.now(),
-    });
+    try {
+      const storedUser = await AsyncStorage.getItem('loggedInUser');
+      if (!storedUser) {
+        Alert.alert('Not logged in', 'You must be logged in to add entries.');
+        return;
+      }
+
+      const { username } = JSON.parse(storedUser);
+
+
+      await addJournalEntry({
+        title,
+        content,
+        mood: selectedMood.mood,
+        moodColor: selectedMood.color,
+        moodIcon: selectedMood.icon,
+        tags: tags.split(',').map(t => t.trim()),
+        date: Date.now(),
+        username,
+      });
 
     setTitle('');
     setContent('');
@@ -45,7 +57,11 @@ export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded }) => {
     setSelectedMood(moodOptions[0]);
 
     onEntryAdded();
+  } catch (error) {
+      console.error('Error adding journal entry:', error);
+      Alert.alert('Error', 'Something went wrong while saving the entry.');
   };
+}
 
   return (
     <ScrollView style={styles.container}>
