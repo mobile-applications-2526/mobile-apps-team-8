@@ -16,7 +16,7 @@ export default function AnalyticsScreen() {
   const global = GlobalStyles(mode);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('userToken');
+    await AsyncStorage.removeItem('loggedInUser');
     router.replace('/login');
   };
 

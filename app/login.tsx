@@ -1,27 +1,65 @@
+import UserService from '@/services/UserService';
 import { createLoginStyles } from '@/styles/login.styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const styles = createLoginStyles('light'); 
 
 
   useEffect(() => {
-    AsyncStorage.getItem('userToken').then((token) => {
-      if (token) router.replace('/onboarding');
+    AsyncStorage.getItem('loggedInUser').then((user) => {
+      if (user) router.replace('/onboarding');
     });
   }, []);
 
   const handleLogin = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // fake API delay
-    await AsyncStorage.setItem('userToken', 'demo-token-123');
-    router.replace('/onboarding');
+    try {
+      const user = { username, password };
+      const response = await UserService.loginUser(user);
+
+      if (response.ok) {
+        const data = await response.json();
+
+        await AsyncStorage.setItem(
+          'loggedInUser',
+          JSON.stringify({
+            token: data.token,
+            username: data.username,
+            email: data.email,
+          })
+        );
+
+        Toast.show({
+          type: 'success',
+          text1: 'Login successful',
+          text2: `Welcome back, ${data.username || 'user'} 👋`,
+          position: 'top',
+          visibilityTime: 2000,
+        });
+
+        setTimeout(() => router.replace('/onboarding'), 2000);
+      } else if (response.status === 429) {
+        Alert.alert('Error', 'Too many login attempts. Please try again later.');
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Invalid credentials',
+          text2: 'Please check your username and password.',
+          position: 'top',
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while logging in.');
+      console.error(error);
+    }
   };
 
   return (
@@ -37,13 +75,13 @@ export default function LoginScreen() {
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Username</Text>
             <TextInput
-              placeholder="your.email@example.com"
+              placeholder="Enter your username"
               placeholderTextColor="rgba(60, 65, 66, 0.4)"
               style={styles.input}
-              value={email}
-              onChangeText={setEmail}
+              value={username}
+              onChangeText={setUsername}
               autoCapitalize="none"
               keyboardType="email-address"
             />
