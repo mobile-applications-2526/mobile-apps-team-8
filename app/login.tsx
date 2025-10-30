@@ -77,7 +77,7 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
-              placeholder="Enter your emai"
+              placeholder="Enter your email"
               placeholderTextColor="rgba(60, 65, 66, 0.4)"
               style={styles.input}
               value={email}
