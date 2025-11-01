@@ -34,7 +34,7 @@ export default function SignupScreen() {
                   visibilityTime: 2000,
                 });
 
-        const loginResponse = await UserService.loginUser({ username, password });
+        const loginResponse = await UserService.loginUser({ email, password });
         if (loginResponse.ok) {
           const data = await loginResponse.json();
 
