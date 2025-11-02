@@ -5,7 +5,7 @@ import { ArrowLeft, BookOpen } from 'lucide-react-native';
 export function JournalHeader({ router, global, insets }: any) {
   const theme = global;
   return (
-    <View style={[global.card, { flexDirection: 'row', alignItems: 'center', paddingTop: insets.top + 12, paddingHorizontal: 16, borderBottomWidth: 1 }]}>
+    <View style={[global.card, { flexDirection: 'row', alignItems: 'center', paddingTop: insets.top + 12, paddingHorizontal: 16, borderBottomWidth: 1, width: '100%' }]}>
       <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
         <ArrowLeft size={24} color={theme.foreground} />
       </TouchableOpacity>

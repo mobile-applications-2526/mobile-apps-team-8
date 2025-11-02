@@ -72,8 +72,8 @@ export function JournalEntryCard({ entry, index, global, theme, router }: Journa
 }
 
 const styles = StyleSheet.create({
-  timelineMarker: { width: 12, height: 12, borderRadius: 6, position: 'absolute', left: 16, top: 16 },
-  dateContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 40, marginBottom: 8 },
+  timelineMarker: { width: 12, height: 12, borderRadius: 6, position: 'absolute', left: 16, top: 2 },
+  dateContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 36, marginBottom: 8 },
   dateText: { fontSize: 12, marginLeft: 4 },
   card: { padding: 16, borderRadius: 24, marginBottom: 16 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },

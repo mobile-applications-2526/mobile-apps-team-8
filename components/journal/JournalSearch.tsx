@@ -8,7 +8,7 @@ export function JournalSearch({ searchQuery, setSearchQuery, theme }: any) {
       <Search size={16} color={theme.border} style={{ position: 'absolute', left: 12, top: 12 }} />
       <TextInput
         placeholder="Search entries, tags, or feelings..."
-        placeholderTextColor={theme.border}
+        placeholderTextColor="#000000ff"
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={{ height: 36, borderRadius: 24, paddingLeft: 28, color: theme.foreground }}

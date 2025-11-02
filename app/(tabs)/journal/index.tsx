@@ -1,7 +1,7 @@
 import { Colors, GlobalStyles } from '@/styles/global';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Button, FlatList, Text, useColorScheme, View } from 'react-native';
+import { Button, FlatList, Modal, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -33,6 +33,7 @@ export default function JournalScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null); 
+  const [modalVisible, setModalVisible] = useState(false);
 
 
 
@@ -88,31 +89,10 @@ export default function JournalScreen() {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-      <JournalHeader router={router} global={global} insets={insets} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={["right", "left"]}>
+      <JournalHeader router={{ back: () => {} }} global={global} insets={insets} />
 
-      <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
-        <Button
-          title={showForm ? 'Close Form' : 'Add New Entry'}
-          onPress={() => setShowForm(!showForm)}
-        />
-      </View>
-
-      {showForm && (
-        <NewEntryForm
-          onEntryAdded={() => {
-            refreshEntries();
-            setShowForm(false);
-          }}
-        />
-      )}
-
-      <JournalSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        theme={theme}
-      />
-
+      <JournalSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} theme={theme} />
       <MoodFilter
         uniqueMoods={uniqueMoods}
         selectedMood={selectedMood}
@@ -121,27 +101,70 @@ export default function JournalScreen() {
         theme={theme}
       />
 
-      {filteredEntries.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
-          <Text style={{ color: theme.foreground, fontSize: 16 }}>No entries found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredEntries}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <JournalEntryCard
-              entry={item}
-              index={index}
-              theme={theme}
-              global={global}
-              router={router}
-              // refreshEntries={refreshEntries} // optional: for delete functionality
+      <View style={{ flex: 25 }}>
+        {filteredEntries.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 50 }}>
+            <Text style={{ color: theme.foreground, fontSize: 16 }}>No entries found</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredEntries}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, index }) => (
+              <JournalEntryCard entry={item} index={index} theme={theme} global={global} router={router} />
+            )}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 1 }}
+          />
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 32,
+          right: 32,
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: '#D4AEA3',
+          justifyContent: 'center',
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowOffset: { width: 0, height: 4 },
+          shadowRadius: 6,
+        }}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={{ fontSize: 32, color: 'white' }}>+</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center' }}>
+          <View
+            style={{
+              backgroundColor: theme.background,
+              marginHorizontal: 16,
+              borderRadius: 24,
+              padding: 16,
+              maxHeight: '80%',
+            }}
+          >
+            <NewEntryForm
+              onEntryAdded={() => {
+                refreshEntries();
+                setModalVisible(false);
+              }}
+              onCancel={()=> setModalVisible(false)}
             />
-          )}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
-        />
-      )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

@@ -1,25 +1,51 @@
 import React from 'react';
-import { ScrollView, TouchableOpacity, Text } from 'react-native';
+import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 export function MoodFilter({ uniqueMoods, selectedMood, setSelectedMood, moodIcons, theme }: any) {
   return (
-    <ScrollView horizontal contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }} showsHorizontalScrollIndicator={false}>
+    <ScrollView
+      horizontal
+      contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}
+      showsHorizontalScrollIndicator={false}
+    >
       <TouchableOpacity
-        style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8, flexDirection: 'row', alignItems: 'center', backgroundColor: !selectedMood ? theme.primary : theme.card }}
+        style={[
+          styles.button,
+          { backgroundColor: !selectedMood ? theme.primary : theme.card, paddingHorizontal: 16 }
+        ]}
         onPress={() => setSelectedMood(null)}
       >
-        <Text style={{ color: !selectedMood ? theme.primaryForeground : theme.foreground }}>All</Text>
+        <Text style={{ color: !selectedMood ? theme.primaryForeground : theme.foreground, fontWeight: '600' }}>All</Text>
       </TouchableOpacity>
+
       {uniqueMoods.map((mood: string) => (
         <TouchableOpacity
           key={mood}
-          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8, flexDirection: 'row', alignItems: 'center', backgroundColor: selectedMood === mood ? theme.primary : theme.card }}
+          style={[
+            styles.button,
+            selectedMood === mood && { backgroundColor: theme.primary }
+          ]}
           onPress={() => setSelectedMood(selectedMood === mood ? null : mood)}
         >
-          <Text>{moodIcons[mood]}</Text>
-          <Text style={{ marginLeft: 4, color: theme.foreground }}>{mood}</Text>
+          <Text style={styles.emoji}>{moodIcons[mood]}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  button: {
+    height: 40,
+    minWidth: 40,
+    marginRight: 8,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+  },
+  emoji: {
+    fontSize: 20,
+    textAlign: 'center',
+  },
+});

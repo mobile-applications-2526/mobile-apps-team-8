@@ -5,6 +5,7 @@ import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, TouchableOpacit
 
 interface NewEntryFormProps {
   onEntryAdded: () => void; 
+  onCancel: () => void;
 }
 
 const moodOptions = [
@@ -18,7 +19,7 @@ const moodOptions = [
   { mood: 'grateful', icon: '🙏', color: '#FFDAB9' },
 ];
 
-export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded }) => {
+export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded, onCancel }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
@@ -65,6 +66,13 @@ export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded }) => {
 
   return (
     <ScrollView style={styles.container}>
+
+      <TouchableOpacity
+        onPress={onCancel}
+        style={{ alignSelf: 'flex-end', marginBottom: 12, padding: 8 }}
+      >
+        <Text style={{ color: 'red', fontWeight: 'bold' }}>Cancel</Text>
+      </TouchableOpacity>
       <Text style={styles.label}>Title</Text>
       <TextInput
         value={title}
