@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-
+import { Bot } from "lucide-react-native";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageList } from "@/components/chat/MessageList";
@@ -91,6 +91,8 @@ export default function ChatScreen() {
       <Header
         title="AI Companion"
         subtitle="Always here for you"
+        icon={Bot}
+        showBackButton={false}
         global={global}
         insets={insets}
       />
