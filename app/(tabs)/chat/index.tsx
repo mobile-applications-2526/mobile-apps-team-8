@@ -92,7 +92,7 @@ export default function ChatScreen() {
         title="AI Companion"
         subtitle="Always here for you"
         icon={Bot}
-        showBackButton={false}
+        showBackButton={true}
         global={global}
         insets={insets}
       />
