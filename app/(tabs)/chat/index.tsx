@@ -16,6 +16,7 @@ import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageList } from "@/components/chat/MessageList";
 import { StatusBar } from "expo-status-bar";
+import Header from "@/components/header/Header";
 
 export interface Message {
   id: string;
@@ -25,7 +26,6 @@ export interface Message {
 }
 
 export default function ChatScreen() {
-  const router = useRouter();
   const mode = useColorScheme() || "light";
   const theme = Colors[mode];
   const global = GlobalStyles(mode);
@@ -88,12 +88,17 @@ export default function ChatScreen() {
       }}
       edges={["right", "left"]} // Only apply safe area to top edge
     >
+      <Header
+        title="AI Companion"
+        subtitle="Always here for you"
+        global={global}
+        insets={insets}
+      />
       <StatusBar
         style={mode === "dark" ? "light" : "dark"}
         backgroundColor="transparent"
         translucent={true}
       />
-      <ChatHeader router={router} global={global} insets={insets} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
