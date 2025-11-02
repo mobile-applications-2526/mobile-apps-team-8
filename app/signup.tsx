@@ -1,74 +1,92 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useRouter} from 'expo-router';
-import React, {useState} from 'react';
-import {Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {createLoginStyles} from '../styles/login.styles';
-import UserService from '@/services/UserService';
-import Toast from 'react-native-toast-message';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { createLoginStyles } from "../styles/login.styles";
+import UserService from "@/services/UserService";
+import Toast from "react-native-toast-message";
 
 export default function SignupScreen() {
-    const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [username, setUsername] = useState("");
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
 
+  const styles = createLoginStyles("light");
 
-    const styles = createLoginStyles('light');
-
-    const handleSignup = async () => {
-        try {
-            const user = {
-                username,
-                password,
-                email
-            };
+  const handleSignup = async () => {
+    try {
+      const user = {
+        username,
+        password,
+        email,
+      };
 
             const response = await UserService.registerUser(user);
 
-            if (response.ok) {
-                Toast.show({
-                    type: 'success',
-                    text1: 'Registration successful',
-                    text2: `Welcome aboard, ${username || 'user'} 👋`,
-                    position: 'top',
-                    visibilityTime: 2000,
-                });
+      if (response.ok) {
+        Toast.show({
+          type: "success",
+          text1: "Registration successful",
+          text2: `Welcome aboard, ${username || "user"} 👋`,
+          position: "top",
+          visibilityTime: 2000,
+        });
 
-                const loginResponse = await UserService.loginUser({username, password});
-                if (loginResponse.ok) {
-                    const data = await loginResponse.json();
+        const loginResponse = await UserService.loginUser({ email, password });
+        if (loginResponse.ok) {
+          const data = await loginResponse.json();
 
-                    await AsyncStorage.setItem(
-                        'loggedInUser',
-                        JSON.stringify({
-                            token: data.token,
-                            username: data.username,
-                            email: data.email,
-                        })
-                    );
+          await AsyncStorage.setItem(
+            "loggedInUser",
+            JSON.stringify({
+              token: data.token,
+              username: data.username,
+              email: data.email,
+            })
+          );
 
-                    router.replace('/onboarding');
-                }
-            } else {
-                const err = await response.json();
-                Alert.alert('Error', err.message || 'Signup failed');
-            }
-        } catch (error) {
-            Alert.alert('Error', 'Something went wrong during signup.');
-            console.error(error);
+          setTimeout(() => router.replace("/onboarding"), 2000);
         }
-    };
+      } else {
+        const errorData = await response.json();
+        const errorMessage = errorData.error || "Signup failed";
 
-    return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-        >
-            <View style={styles.content}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>Create account</Text>
-                    <Text style={styles.subtitle}>Sign up to get started</Text>
-                </View>
+        Toast.show({
+          type: "error",
+          text1: "Registration failed",
+          text2: errorMessage,
+          position: "top",
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Something went wrong during signup.",
+        position: "top",
+      });
+      console.error(error);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create account</Text>
+          <Text style={styles.subtitle}>Sign up to get started</Text>
+        </View>
 
                 <View style={styles.form}>
                     <View style={styles.inputContainer}>
@@ -136,5 +154,3 @@ export default function SignupScreen() {
         </KeyboardAvoidingView>
     );
 }
-
-
