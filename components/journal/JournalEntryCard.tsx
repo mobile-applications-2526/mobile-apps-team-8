@@ -29,7 +29,7 @@ export function JournalEntryCard({ entry, index, global, theme, router }: Journa
       from={{ opacity: 0, translateX: -20 }}
       animate={{ opacity: 1, translateX: 0 }}
       transition={{ delay: index * 100 }}
-      style={{ marginBottom: 16 }}
+      style={{ marginBottom: 16, width: '100%' }}
     >
       <View style={[styles.timelineMarker, { backgroundColor: entry.moodColor }]} />
 
@@ -40,11 +40,10 @@ export function JournalEntryCard({ entry, index, global, theme, router }: Journa
 
       <TouchableOpacity
         style={[global.card, styles.card]}
-        
       >
         <View style={styles.cardHeader}>
           <View style={[styles.moodIconContainer, { backgroundColor: `${entry.moodColor}40` }]}>
-            <Text>{entry.moodIcon}</Text>
+            <Text style={styles.moodIcon}>{entry.moodIcon}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardTitle, { color: theme.foreground }]}>{entry.title}</Text>
@@ -72,16 +71,78 @@ export function JournalEntryCard({ entry, index, global, theme, router }: Journa
 }
 
 const styles = StyleSheet.create({
-  timelineMarker: { width: 12, height: 12, borderRadius: 6, position: 'absolute', left: 16, top: 2 },
-  dateContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 36, marginBottom: 8 },
-  dateText: { fontSize: 12, marginLeft: 4 },
-  card: { padding: 16, borderRadius: 24, marginBottom: 16 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  moodIconContainer: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  cardTitle: { fontSize: 16, fontWeight: '600', marginBottom: 2 },
-  moodRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  moodText: { fontSize: 12, marginLeft: 4, textTransform: 'capitalize' },
-  cardContent: { fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  tag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginRight: 4, marginBottom: 4 },
+  timelineMarker: { 
+    width: 12, 
+    height: 12, 
+    borderRadius: 6, 
+    position: 'absolute', 
+    left: 0,
+    top: 2 
+  },
+  dateContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginLeft: 20, 
+    marginBottom: 8 
+  },
+  dateText: { 
+    fontSize: 12, 
+    marginLeft: 4 
+  },
+  card: { 
+    padding: 16, 
+    borderRadius: 24, 
+    marginBottom: 16,
+    width: '100%', 
+  },
+  cardHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 8 
+  },
+  moodIconContainer: { 
+    width: 40,
+    height: 40,
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginRight: 12
+  },
+  moodIcon: {
+    fontSize: 20,
+  },
+  cardTitle: { 
+    fontSize: 18,
+    fontWeight: '600', 
+    marginBottom: 2 
+  },
+  moodRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 2 
+  },
+  moodText: { 
+    fontSize: 13,
+    marginLeft: 4, 
+    textTransform: 'capitalize' 
+  },
+  cardContent: { 
+    fontSize: 14, 
+    lineHeight: 20, 
+    marginBottom: 8,
+    marginTop: 8,
+  },
+  tagsRow: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 4,
+    marginTop: 8,
+  },
+  tag: { 
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12, 
+    marginRight: 4, 
+    marginBottom: 4 
+  },
 });
