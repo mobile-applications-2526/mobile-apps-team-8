@@ -12,7 +12,6 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { Bot } from "lucide-react-native";
-import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageList } from "@/components/chat/MessageList";
 import { StatusBar } from "expo-status-bar";
