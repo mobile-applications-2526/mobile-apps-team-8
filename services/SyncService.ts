@@ -128,10 +128,7 @@ export const SyncService = {
 
     try {
       const online = await this.isOnline();
-
-      if (!online) {
-        return results;
-      }
+      if (!online) return results;
 
       console.log("🔄 Starting sync...");
       removeDuplicateEntries(username);
@@ -191,12 +188,14 @@ export const SyncService = {
               `📥 Downloading entry: ${title} | Backend ID: ${backendId}`
             );
 
+
             db.execSync(
               `INSERT OR IGNORE INTO journal_entries 
-             (title, content, mood, tags, date, username, synced, backend_id)
-             VALUES ('${title}', '${content}', '${mood}', 
-                     '${tags}', ${dateInMs}, '${username}', 1, '${backendId}')`
+           (title, content, mood, tags, date, username, synced, backend_id)
+           VALUES ('${title}', '${content}', '${mood}', 
+                   '${tags}', ${dateInMs}, '${username}', 1, '${backendId}')`
             );
+
             results.downloaded++;
           } catch (error) {
             results.errors.push(
@@ -223,7 +222,6 @@ export const SyncService = {
       }
 
       await AsyncStorage.setItem("lastSyncTime", new Date().toISOString());
-
       removeDuplicateEntries(username);
 
       console.log(
