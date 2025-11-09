@@ -3,6 +3,8 @@ import { openDatabaseSync } from "expo-sqlite";
 export const db = openDatabaseSync("journal.db");
 
 export function initDB() {
+  //temp for development, gotta go when publishing
+  // db.execSync(`DROP TABLE IF EXISTS journal_entries;`);
   db.execSync(
     `CREATE TABLE IF NOT EXISTS journal_entries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
