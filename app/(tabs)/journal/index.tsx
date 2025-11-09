@@ -48,6 +48,7 @@ export default function JournalScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [isDbReady, setIsDbReady] = useState(false);
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -66,7 +67,7 @@ export default function JournalScreen() {
     grateful: "🙏",
   };
 
-  const enrichEntryWithMoodData = (entry: any): JournalEntry => {
+  const enrichEntryWithMoodData = useCallback((entry: any): JournalEntry => {
     const moodKey = entry.mood?.toLowerCase() || "happy";
     const config = moodConfig[moodKey] || moodConfig.happy;
 
@@ -77,14 +78,14 @@ export default function JournalScreen() {
       moodColor: config.color,
       date: entry.date instanceof Date ? entry.date : new Date(entry.date),
     };
-  };
+  }, []);
 
   const refreshEntries = useCallback(() => {
     if (!username) return;
     const data = getAllJournalEntriesForUser(username);
     const enrichedData = data.map(enrichEntryWithMoodData);
     setEntries(enrichedData);
-  }, [username]);
+  }, [username, enrichEntryWithMoodData]);
 
   const handleSync = useCallback(
     async (user: string, silent: boolean = false) => {
@@ -97,6 +98,11 @@ export default function JournalScreen() {
             position: "top",
           });
         }
+        return;
+      }
+
+      if (!isDbReady) {
+        console.log("⏳ Database not ready yet, skipping sync");
         return;
       }
 
@@ -165,13 +171,14 @@ export default function JournalScreen() {
         setIsSyncing(false);
       }
     },
-    []
+    [enrichEntryWithMoodData, isDbReady]
   );
 
   useEffect(() => {
     const loadEntries = async () => {
       console.log("🔧 Initializing database...");
       initDB();
+      setIsDbReady(true);
 
       const storedUser = await AsyncStorage.getItem("loggedInUser");
       const parsedUser = storedUser ? JSON.parse(storedUser) : null;
@@ -191,11 +198,11 @@ export default function JournalScreen() {
     };
 
     loadEntries();
-  }, [handleSync]);
+  }, [enrichEntryWithMoodData, handleSync]);
 
-  //Let it sync every minute aswell
   useEffect(() => {
-    if (!username) return;
+    if (!username || !isDbReady) return;
+
     const syncInterval = setInterval(async () => {
       const online = await SyncService.isOnline();
       if (!online) {
@@ -207,7 +214,7 @@ export default function JournalScreen() {
     return () => {
       clearInterval(syncInterval);
     };
-  }, [username, handleSync]);
+  }, [username, isDbReady, handleSync]);
 
   const uniqueMoods = Array.from(new Set(entries.map((entry) => entry.mood)));
 
