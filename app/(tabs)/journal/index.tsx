@@ -193,6 +193,22 @@ export default function JournalScreen() {
     loadEntries();
   }, [handleSync]);
 
+  //Let it sync every minute aswell
+  useEffect(() => {
+    if (!username) return;
+    const syncInterval = setInterval(async () => {
+      const online = await SyncService.isOnline();
+      if (!online) {
+        return;
+      }
+      handleSync(username, true);
+    }, 60000);
+
+    return () => {
+      clearInterval(syncInterval);
+    };
+  }, [username, handleSync]);
+
   const uniqueMoods = Array.from(new Set(entries.map((entry) => entry.mood)));
 
   const filteredEntries = entries.filter((entry) => {
