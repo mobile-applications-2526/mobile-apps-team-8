@@ -41,12 +41,10 @@ export const NewEntryForm: React.FC<NewEntryFormProps> = ({ onEntryAdded, onCanc
       const { username } = JSON.parse(storedUser);
 
 
-      await addJournalEntry({
+      addJournalEntry({
         title,
         content,
         mood: selectedMood.mood,
-        moodColor: selectedMood.color,
-        moodIcon: selectedMood.icon,
         tags: tags.split(',').map(t => t.trim()),
         date: Date.now(),
         username,
