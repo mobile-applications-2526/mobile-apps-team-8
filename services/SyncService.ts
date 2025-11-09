@@ -4,7 +4,7 @@ import { db } from "@/database";
 import { BackendJournalEntry } from "@/types";
 import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
 
-const API_URL = "https://craftmanship.robinghys.com";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const SyncService = {
   async isOnline(): Promise<boolean> {
