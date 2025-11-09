@@ -1,19 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import { db, addJournalEntry } from "@/database";
+import { db } from "@/database";
+import { BackendJournalEntry } from "@/types";
+import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
 
-interface BackendJournalEntry {
-  id: string;
-  title: string;
-  content: string;
-  mood: string;
-  tags: string[];
-  date: number;
-  username: string;
-}
+const API_URL = "https://craftmanship.robinghys.com";
 
 export const SyncService = {
-  //check wether device is online
   async isOnline(): Promise<boolean> {
     const state = await NetInfo.fetch();
     return state.isConnected ?? false;
@@ -28,12 +21,11 @@ export const SyncService = {
     return null;
   },
 
-  //fetch all from backend
-  async fetchBackendJournals(): Promise<BackendJournalEntry[]> {
+  async fetchBackendJournals(username: string): Promise<BackendJournalEntry[]> {
     const token = await this.getAuthToken();
     if (!token) throw new Error("No auth token found");
 
-    const response = await fetch(`${EXPO_PUBLIC_API_URL}/journals`, {
+    const response = await fetch(`${API_URL}/journals`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -48,12 +40,16 @@ export const SyncService = {
     return await response.json();
   },
 
-  //function to upload journal entry to backend
   async uploadJournalToBackend(entry: any): Promise<string> {
     const token = await this.getAuthToken();
     if (!token) throw new Error("No auth token found");
 
-    const response = await fetch(`${EXPO_PUBLIC_API_URL}/journals`, {
+    const backendMood =
+      moodMapping[entry.mood.toLowerCase()] || entry.mood.toUpperCase();
+
+    const dateISO = new Date(entry.date).toISOString();
+
+    const response = await fetch(`${API_URL}/journals`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -62,25 +58,35 @@ export const SyncService = {
       body: JSON.stringify({
         title: entry.title,
         content: entry.content,
-        mood: entry.mood,
-        tags: entry.tags,
-        date: entry.date,
+        mood: backendMood,
+        tags: entry.tags || [],
+        date: dateISO,
         username: entry.username,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to upload journal: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to upload journal: ${response.status} - ${errorText}`
+      );
     }
 
     const data = await response.json();
-    return data.id;
+
+    if (!data.id) {
+      throw new Error("Backend did not return an ID");
+    }
+
+    return String(data.id);
   },
 
-  /**
-   * Update backend_id and synced status in local DB
-   */
   markAsSynced(localId: number, backendId: string) {
+    if (!backendId || typeof backendId !== "string") {
+      console.error("❌ Invalid backendId:", backendId);
+      throw new Error("Invalid backend ID");
+    }
+
     db.execSync(
       `UPDATE journal_entries 
        SET synced = 1, backend_id = '${backendId.replace(/'/g, "''")}' 
@@ -88,9 +94,6 @@ export const SyncService = {
     );
   },
 
-  /**
-   * Get all unsynced local entries
-   */
   getUnsyncedEntries(): any[] {
     const rows = db.getAllSync<any>(
       "SELECT * FROM journal_entries WHERE synced = 0 ORDER BY date ASC"
@@ -102,9 +105,6 @@ export const SyncService = {
     }));
   },
 
-  /**
-   * Get all local entries with backend_id
-   */
   getLocalEntriesMap(): Map<string, any> {
     const rows = db.getAllSync<any>(
       "SELECT * FROM journal_entries WHERE backend_id IS NOT NULL"
@@ -119,9 +119,6 @@ export const SyncService = {
     return map;
   },
 
-  /**
-   * Main sync function
-   */
   async syncJournals(username: string): Promise<{
     uploaded: number;
     downloaded: number;
@@ -130,45 +127,57 @@ export const SyncService = {
     const results = { uploaded: 0, downloaded: 0, errors: [] as string[] };
 
     try {
-      // Check if device online
       const online = await this.isOnline();
 
       if (!online) {
-        //No synching when offline
         return results;
       }
 
-      //Upload entries to backend where synced = 0
-      const unsyncedEntries = this.getUnsyncedEntries();
-      for (const entry of unsyncedEntries) {
-        try {
-          const backendId = await this.uploadJournalToBackend(entry);
-          this.markAsSynced(entry.id, backendId);
-          results.uploaded++;
-        } catch (error) {
-          results.errors.push(`Failed to upload entry ${entry.id}: ${error}`);
-        }
-      }
-
-      //Get All journals backend
       const backendEntries = await this.fetchBackendJournals(username);
       const localMap = this.getLocalEntriesMap();
 
-      //Download online entries that aren't in SQLite yet
       for (const backendEntry of backendEntries) {
         if (!localMap.has(backendEntry.id)) {
           try {
             const title = backendEntry.title.replace(/'/g, "''");
             const content = backendEntry.content.replace(/'/g, "''");
-            const mood = backendEntry.mood.replace(/'/g, "''");
+
+            const localMood =
+              moodReverseMapping[backendEntry.mood] ||
+              backendEntry.mood.toLowerCase();
+            const mood = localMood.replace(/'/g, "''");
+
             const tags = backendEntry.tags.join(",").replace(/'/g, "''");
             const backendId = backendEntry.id.replace(/'/g, "''");
+
+            let dateInMs: number;
+
+            if (typeof backendEntry.date === "string") {
+              const parsed = new Date(backendEntry.date);
+              dateInMs = parsed.getTime();
+            } else if (backendEntry.date < 100000) {
+              dateInMs = backendEntry.date * 24 * 60 * 60 * 1000;
+            } else if (backendEntry.date > 1000000000000) {
+              dateInMs = backendEntry.date;
+            } else {
+              dateInMs = backendEntry.date * 1000;
+            }
+
+            if (isNaN(dateInMs) || dateInMs <= 0) {
+              throw new Error(`Invalid date value: ${backendEntry.date}`);
+            }
+
+            console.log(
+              `📥 Downloading entry: ${title} | Date: ${new Date(
+                dateInMs
+              ).toLocaleString()}`
+            );
 
             db.execSync(
               `INSERT INTO journal_entries 
                (title, content, mood, tags, date, username, synced, backend_id)
                VALUES ('${title}', '${content}', '${mood}', 
-                       '${tags}', ${backendEntry.date}, '${username}', 1, '${backendId}')`
+                       '${tags}', ${dateInMs}, '${username}', 1, '${backendId}')`
             );
             results.downloaded++;
           } catch (error) {
@@ -176,6 +185,22 @@ export const SyncService = {
               `Failed to download entry ${backendEntry.id}: ${error}`
             );
           }
+        }
+      }
+
+      const unsyncedEntries = this.getUnsyncedEntries();
+      for (const entry of unsyncedEntries) {
+        try {
+          console.log(
+            `📤 Uploading entry: ${entry.title} | Date: ${new Date(
+              entry.date
+            ).toISOString()}`
+          );
+          const backendId = await this.uploadJournalToBackend(entry);
+          this.markAsSynced(entry.id, backendId);
+          results.uploaded++;
+        } catch (error) {
+          results.errors.push(`Failed to upload entry ${entry.id}: ${error}`);
         }
       }
 
