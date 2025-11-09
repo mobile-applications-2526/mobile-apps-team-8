@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import { db } from "@/database";
+import { checkForDuplicate, db, removeDuplicateEntries } from "@/database";
 import { BackendJournalEntry } from "@/types";
 import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
 
@@ -133,8 +133,15 @@ export const SyncService = {
         return results;
       }
 
+      console.log("🔄 Starting sync...");
+      removeDuplicateEntries(username);
+
       const backendEntries = await this.fetchBackendJournals(username);
       const localMap = this.getLocalEntriesMap();
+
+      console.log(
+        `📦 Backend entries: ${backendEntries.length}, Local synced: ${localMap.size}`
+      );
 
       for (const backendEntry of backendEntries) {
         if (!localMap.has(backendEntry.id)) {
@@ -167,17 +174,28 @@ export const SyncService = {
               throw new Error(`Invalid date value: ${backendEntry.date}`);
             }
 
+            const isDuplicate = checkForDuplicate({
+              title: backendEntry.title,
+              content: backendEntry.content,
+              date: dateInMs,
+              username,
+              backend_id: backendEntry.id,
+            });
+
+            if (isDuplicate) {
+              console.log(`⏭️ Skipping duplicate entry: ${title}`);
+              continue;
+            }
+
             console.log(
-              `📥 Downloading entry: ${title} | Date: ${new Date(
-                dateInMs
-              ).toLocaleString()}`
+              `📥 Downloading entry: ${title} | Backend ID: ${backendId}`
             );
 
             db.execSync(
-              `INSERT INTO journal_entries 
-               (title, content, mood, tags, date, username, synced, backend_id)
-               VALUES ('${title}', '${content}', '${mood}', 
-                       '${tags}', ${dateInMs}, '${username}', 1, '${backendId}')`
+              `INSERT OR IGNORE INTO journal_entries 
+             (title, content, mood, tags, date, username, synced, backend_id)
+             VALUES ('${title}', '${content}', '${mood}', 
+                     '${tags}', ${dateInMs}, '${username}', 1, '${backendId}')`
             );
             results.downloaded++;
           } catch (error) {
@@ -189,12 +207,12 @@ export const SyncService = {
       }
 
       const unsyncedEntries = this.getUnsyncedEntries();
+      console.log(`📤 Unsynced local entries: ${unsyncedEntries.length}`);
+
       for (const entry of unsyncedEntries) {
         try {
           console.log(
-            `📤 Uploading entry: ${entry.title} | Date: ${new Date(
-              entry.date
-            ).toISOString()}`
+            `📤 Uploading entry: ${entry.title} | Local ID: ${entry.id}`
           );
           const backendId = await this.uploadJournalToBackend(entry);
           this.markAsSynced(entry.id, backendId);
@@ -205,6 +223,12 @@ export const SyncService = {
       }
 
       await AsyncStorage.setItem("lastSyncTime", new Date().toISOString());
+
+      removeDuplicateEntries(username);
+
+      console.log(
+        `✅ Sync complete: ↑${results.uploaded} ↓${results.downloaded}`
+      );
 
       return results;
     } catch (error) {
