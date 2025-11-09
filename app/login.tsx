@@ -27,13 +27,13 @@ export default function LoginScreen() {
     });
   }, []);
 
-    const handleLogin = async () => {
-        try {
-            const user = {email, password};
-            const response = await UserService.loginUser(user);
+  const handleLogin = async () => {
+    try {
+      const user = { email, password };
+      const response = await UserService.loginUser(user);
 
-            if (response.ok) {
-                const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
         await AsyncStorage.setItem(
           "loggedInUser",
@@ -95,32 +95,33 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Sign in to continue</Text>
         </View>
 
-                <View style={styles.form}>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            placeholder="Enter your email"
-                            placeholderTextColor="rgba(60, 65, 66, 0.4)"
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                        />
-                    </View>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              placeholder="Enter your email"
+              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
 
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            placeholder="Enter your password"
-                            placeholderTextColor="rgba(60, 65, 66, 0.4)"
-                            style={styles.input}
-                            secureTextEntry
-                            underlineColorAndroid="transparent"
-                            value={password}
-                            onChangeText={setPassword}
-                        />
-                    </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              style={styles.input}
+              secureTextEntry
+              autoCapitalize="none"
+              underlineColorAndroid="transparent"
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
 
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
