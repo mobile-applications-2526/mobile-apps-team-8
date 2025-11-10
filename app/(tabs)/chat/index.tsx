@@ -1,6 +1,6 @@
 import { Colors, GlobalStyles } from "@/styles/global";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +16,7 @@ import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageList } from "@/components/chat/MessageList";
 import { StatusBar } from "expo-status-bar";
 import Header from "@/components/header/Header";
+import {ChatService} from "@/services/ChatService";
 
 export interface Message {
   id: string;
@@ -30,21 +31,35 @@ export default function ChatScreen() {
   const global = GlobalStyles(mode);
   const insets = useSafeAreaInsets();
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hello! I'm here to listen and support you. How are you feeling today?",
-      isUser: false,
-      timestamp: new Date(Date.now() - 5000),
-    },
-  ]);
 
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const rawMessages = await ChatService.getMessages();
+
+        const messages = rawMessages.messages.map((m: any) => ({
+          id: m.id,
+          text: m.message.replace(/^"|"$/g, ""),
+          isUser: !m.ai,
+          timestamp: new Date(m.timestamp),
+        }));
+        setMessages(messages);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+    loadMessages();
+  }, []);
+
+  const handleSend = async () => {
     if (!newMessage.trim()) return;
+    setLoading(true);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -55,25 +70,21 @@ export default function ChatScreen() {
 
     setMessages((prev) => [...prev, userMessage]);
     setNewMessage("");
-    setIsTyping(true);
 
-    setTimeout(() => {
-      const responses = [
-        "I understand how you're feeling.",
-        "Thank you for sharing that with me.",
-        "That sounds challenging.",
-      ];
-
+    try {
+      const response = await ChatService.sendMessage(newMessage);
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: responses[Math.floor(Math.random() * responses.length)],
-        isUser: false,
-        timestamp: new Date(),
+        id: response.id,
+        text: response.message,
+        isUser: !response.ai,
+        timestamp: new Date(response.timestamp),
       };
-
-      setIsTyping(false);
       setMessages((prev) => [...prev, aiMessage]);
-    }, 1500);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleRecording = () => setIsRecording((prev) => !prev);
@@ -81,11 +92,11 @@ export default function ChatScreen() {
   return (
     <SafeAreaView
       style={{
-        flex: 1, // Changed from flex: 10
+        flex: 1, 
         backgroundColor: theme.background,
         borderWidth: 0,
       }}
-      edges={["right", "left"]} // Only apply safe area to top edge
+      edges={["right", "left"]} 
     >
       <Header
         title="AI Companion"
