@@ -4,6 +4,8 @@ import {useRouter} from 'expo-router';
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {useColorScheme} from 'react-native';
 import {GlobalStyles} from '@/styles/global';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addJournalEntry } from '@/database';
 
 const emotions = [
     {id: 'happy', label: 'Happy', color: '#FFE66D', icon: '😊'},
@@ -20,9 +22,21 @@ export default function OnboardingScreen() {
     const styles = GlobalStyles(mode);
     const [selected, setSelected] = useState<string | null>(null);
 
-    const handleContinue = () => {
-        router.replace('/(tabs)'); // skip to main app after onboarding
-    };
+    const handleContinue = async () => {
+        if (selected) {
+            const username = (await AsyncStorage.getItem("loggedInUser")) || "guest";
+
+            addJournalEntry({
+            title: "Startup Mood",
+            content: "", 
+            mood: selected,
+            tags: ["startup"], 
+            date: Date.now(),
+            username,
+            });
+        }
+        router.replace('/(tabs)');
+        };
 
     return (
         <ScrollView
