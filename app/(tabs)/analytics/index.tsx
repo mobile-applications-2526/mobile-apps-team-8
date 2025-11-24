@@ -1,111 +1,98 @@
-import { InsightList } from "@/components/analytics/InsightList";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, useColorScheme, View, Text } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { Colors, GlobalStyles } from "@/styles/global";
+import { getAllJournalEntriesForUser } from "@/database";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MoodJourney } from "@/components/analytics/MoodJourney";
 import { StreakCards } from "@/components/analytics/StreakCards";
+import { DailyTip } from "@/components/analytics/DailyTip";
 import Header from "@/components/header/Header";
-import { Colors, GlobalStyles } from "@/styles/global";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { BarChart3, BookOpen } from "lucide-react-native";
-import React from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { BarChart3 } from "lucide-react-native";
+import { useFocusEffect } from "expo-router";
 
 export default function AnalyticsScreen() {
-  const router = useRouter();
   const mode = useColorScheme() || "light";
   const theme = Colors[mode];
   const global = GlobalStyles(mode);
   const insets = useSafeAreaInsets();
 
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem("loggedInUser");
-    router.replace("/login");
-  };
+  const [entries, setEntries] = useState<any[]>([]);
+  const [streaks, setStreaks] = useState<any[]>([]);
+  const [moodJourney, setMoodJourney] = useState<any[]>([]);
+  const [insights, setInsights] = useState<any[]>([]);
 
-  const moodJourney = [
-    { week: "Week 1", avg: 6.2, color: "#FFB3BA" },
-    { week: "Week 2", avg: 7.1, color: "#A8E6CF" },
-    { week: "Week 3", avg: 6.8, color: "#FFE66D" },
-    { week: "Week 4", avg: 8.1, color: "#B3D9FF" },
-    { week: "This week", avg: 7.9, color: "#FFDFBA" },
-  ];
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadAnalytics = async () => {
+        const storedUser = await AsyncStorage.getItem("loggedInUser");
+        if (!storedUser) return;
+        const { username } = JSON.parse(storedUser);
 
-  type Insight = {
-    title: string;
-    description: string;
-    icon: string;
-    strength: "medium" | "high";
-  };
+        const rawEntries = await getAllJournalEntriesForUser(username);
 
-  const insights: Insight[] = [
-    {
-      title: "Evening Reflections",
-      description:
-        "You tend to feel most centered when journaling in the evening",
-      icon: "🌙",
-      strength: "high",
-    },
-    {
-      title: "Nature Connection",
-      description:
-        "Outdoor activities consistently improve your mood by 2.3 points",
-      icon: "🌿",
-      strength: "high",
-    },
-    {
-      title: "Social Energy",
-      description:
-        "Conversations with friends correlate with higher happiness scores",
-      icon: "👥",
-      strength: "medium",
-    },
-    {
-      title: "Mindful Mornings",
-      description:
-        "Morning meditation shows positive impact on your daily outlook",
-      icon: "🧘‍♀️",
-      strength: "medium",
-    },
-  ];
+        const parsedEntries = rawEntries
+          .map(e => ({
+            ...e,
+            date: e.date instanceof Date ? e.date : new Date(e.date),
+          }))
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  type Streak = {
-    label: string;
-    value: string;
-    color: string;
-    icon: "target" | "award" | "zap";
-  };
+        setEntries(parsedEntries);
 
-  const streaks: Streak[] = [
-    {
-      label: "Current streak",
-      value: "12 days",
-      color: "#A8B5A0",
-      icon: "target",
-    },
-    {
-      label: "Longest streak",
-      value: "28 days",
-      color: "#D4A59A",
-      icon: "award",
-    },
-    { label: "Total entries", value: "156", color: "#A8B5A0", icon: "zap" },
-  ];
+        const today = new Date();
+        const dates = parsedEntries.map(e => e.date.toDateString());
+        let currentStreak = 0;
+        let longestStreak = 0;
+        let tempStreak = 0;
+
+        for (let i = dates.length - 1; i >= 0; i--) {
+          const entryDate = new Date(dates[i]);
+          const diffDays = Math.floor((today.getTime() - entryDate.getTime()) / 86400000);
+          if (diffDays === currentStreak) {
+            tempStreak++;
+            currentStreak++;
+          } else {
+            if (tempStreak > longestStreak) longestStreak = tempStreak;
+            tempStreak = 1;
+            currentStreak = 1;
+          }
+        }
+        if (tempStreak > longestStreak) longestStreak = tempStreak;
+
+        setStreaks([
+          { label: "Current streak", value: `${currentStreak} day(s)`, color: "#A8B5A0", icon: "target" },
+          { label: "Longest streak", value: `${longestStreak} day(s)`, color: "#D4A59A", icon: "award" },
+          { label: "Total entries", value: `${parsedEntries.length}`, color: "#A8B5A0", icon: "zap" },
+        ]);
+
+        const weekMap: Record<string, number[]> = {};
+        parsedEntries.forEach(e => {
+          const weekKey = `${e.date.getFullYear()}-W${getWeekNumber(e.date)}`;
+          if (!weekMap[weekKey]) weekMap[weekKey] = [];
+          const moodValue = typeof e.mood === "string" ? moodToNumber(e.mood) : Number(e.mood);
+          weekMap[weekKey].push(moodValue);
+        });
+
+        const journey = Object.entries(weekMap)
+          .slice(-5) 
+          .map(([week, moods]) => ({
+            week,
+            avg: Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10,
+            color: "#A8E6CF",
+          }));
+        setMoodJourney(journey);
+
+        const insightList = generateInsights(parsedEntries);
+        setInsights(insightList);
+      };
+
+      loadAnalytics();
+    }, [])
+);
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      edges={["right", "left"]} // Only apply safe area to top edge
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={["right", "left"]}>
       <Header
         title="Analytics"
         subtitle="Track your progress and insights"
@@ -117,29 +104,45 @@ export default function AnalyticsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <MoodJourney global={global} />
         <StreakCards streaks={streaks} global={global} />
-        <InsightList insights={insights} global={global} />
+        <DailyTip global={global} />
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function getWeekNumber(date: Date) {
+  const d = new Date(date.getTime());
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  const yearStart = new Date(d.getFullYear(), 0, 1);
+  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return weekNo;
+}
+
+function moodToNumber(mood: string) {
+  const map: Record<string, number> = {
+    happy: 8,
+    calm: 7,
+    excited: 9,
+    anxious: 3,
+    sad: 2,
+    stressed: 1,
+  };
+  return map[mood] || 5;
+}
+
+function generateInsights(entries: any[]) {
+  return entries.slice(-4).map(e => ({
+    title: e.title || "Entry",
+    description: e.content.slice(0, 50) || "No content",
+    icon: "📝",
+    strength: "medium",
+  }));
 }
 
 const styles = StyleSheet.create({
   scrollContainer: {
     padding: 16,
     paddingBottom: 40,
-  },
-  logoutButton: {
-    backgroundColor: "#D86B6B",
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-  },
-  logoutText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
   },
 });

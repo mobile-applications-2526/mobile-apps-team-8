@@ -15,6 +15,7 @@ interface MessageListProps {
 
 export function MessageList({ messages }: MessageListProps) {
   const flatListRef = useRef<FlatList>(null);
+  
 
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
@@ -32,6 +33,9 @@ export function MessageList({ messages }: MessageListProps) {
         />
       )}
       keyExtractor={(item) => item.id}
+      onContentSizeChange={() =>
+        flatListRef.current?.scrollToEnd({ animated: false })
+      }
     />
   );
 }
