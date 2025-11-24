@@ -238,7 +238,7 @@ export default function JournalScreen() {
         title="Journal"
         subtitle="Your thoughts and reflections"
         icon={BookOpen}
-        showBackButton={false}
+        showBackButton={true}
         global={global}
         insets={insets}
       />
