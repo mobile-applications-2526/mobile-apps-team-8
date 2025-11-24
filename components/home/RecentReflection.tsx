@@ -4,11 +4,21 @@ import { MotiView } from 'moti';
 import { BookOpen } from 'lucide-react-native';
 import { Colors } from '@/styles/global';
 import { useRouter } from 'expo-router';
+import { JournalEntry } from '@/app/(tabs)/journal';
+
+interface HomeRecentReflectionProps {
+  global: any;
+  router: ReturnType<typeof useRouter>;
+  entry: JournalEntry;
+}
 
 
-export function HomeRecentReflection({ global, router }: { global: any, router: ReturnType<typeof useRouter> }) {
+export function HomeRecentReflection({ global, router, entry }: HomeRecentReflectionProps) {
   const mode = useColorScheme() || 'light';
   const theme = Colors[mode];
+
+  const timeAgo = Math.floor((new Date().getTime() - entry.date.getTime()) / 3600000); 
+
 
   return (
     <MotiView
@@ -20,13 +30,21 @@ export function HomeRecentReflection({ global, router }: { global: any, router: 
       <View style={styles.cardHeader}>
         <BookOpen color={theme.accent} size={18} />
         <Text style={[styles.cardTitle, { color: theme.foreground }]}>Recent Reflection</Text>
-        <Text style={[styles.timeLabel, { color: theme.border }]}>2h ago</Text>
+        <Text style={[styles.timeLabel, { color: theme.border }]}>{timeAgo}h ago</Text>
       </View>
 
-      <Text style={[styles.cardText, { color: theme.cardForeground }]}>
-        "Today I felt more centered after my morning walk. The quiet moments in nature really help
-        me process my thoughts..."
+      <Text style={[styles.cardText, { color: theme.cardForeground, fontWeight: '600', marginBottom: 4 }]}>
+        {entry.title}
       </Text>
+
+      <Text style={[styles.cardText, { color: theme.cardForeground }]}>
+        {entry.content.length > 0
+          ? entry.content.length > 150
+            ? entry.content.slice(0, 150) + '...'
+            : entry.content
+          : 'No content yet'}
+      </Text>
+
 
       <TouchableOpacity
         style={[styles.ghostButton, { backgroundColor: theme.secondary }]}
