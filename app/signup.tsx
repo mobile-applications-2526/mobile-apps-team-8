@@ -29,7 +29,7 @@ export default function SignupScreen() {
         email,
       };
 
-            const response = await UserService.registerUser(user);
+      const response = await UserService.registerUser(user);
 
       if (response.ok) {
         Toast.show({
@@ -88,69 +88,63 @@ export default function SignupScreen() {
           <Text style={styles.subtitle}>Sign up to get started</Text>
         </View>
 
-                <View style={styles.form}>
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Username</Text>
-                        <TextInput
-                            placeholder="Choose your username"
-                            placeholderTextColor="rgba(60, 65, 66, 0.4)"
-                            style={styles.input}
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                            underlineColorAndroid="transparent"
-                        />
-                    </View>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              placeholder="Use your email address"
+              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              underlineColorAndroid="transparent"
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              placeholder="Choose your username"
+              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              style={styles.input}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              underlineColorAndroid="transparent"
+            />
+          </View>
 
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            placeholder="Create a password"
-                            placeholderTextColor="rgba(60, 65, 66, 0.4)"
-                            style={styles.input}
-                            secureTextEntry
-                            value={password}
-                            onChangeText={setPassword}
-                            underlineColorAndroid="transparent"
-                        />
-                    </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              placeholder="Create a password"
+              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              style={styles.input}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+              underlineColorAndroid="transparent"
+            />
+          </View>
 
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            placeholder="Use your email address"
-                            placeholderTextColor="rgba(60, 65, 66, 0.4)"
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
-                            underlineColorAndroid="transparent"
-                        />
-                    </View>
+          <TouchableOpacity
+            style={[styles.button]}
+            onPress={handleSignup}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
 
-
-                    <TouchableOpacity
-                        style={[styles.button]}
-                        onPress={handleSignup}
-                        activeOpacity={0.8}
-                    >
-
-                        <Text style={styles.buttonText}>Sign Up</Text>
-
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>Already have an account? </Text>
-                    <TouchableOpacity
-                        onPress={() => router.push('/login')}
-                    >
-                        <Text style={styles.signUpText}>Log in</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </KeyboardAvoidingView>
-    );
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push("/login")}>
+            <Text style={styles.signUpText}>Log in</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
 }
