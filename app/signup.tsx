@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from "react-native";
 import { createLoginStyles } from "../styles/login.styles";
 import UserService from "@/services/UserService";
@@ -19,7 +20,8 @@ export default function SignupScreen() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
-  const styles = createLoginStyles("light");
+  const mode = useColorScheme() || "light";
+  const styles = createLoginStyles(mode);
 
   const handleSignup = async () => {
     try {
@@ -93,7 +95,11 @@ export default function SignupScreen() {
             <Text style={styles.label}>Email</Text>
             <TextInput
               placeholder="Use your email address"
-              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              placeholderTextColor={
+                mode === "dark"
+                  ? "rgba(232, 221, 212, 0.4)"
+                  : "rgba(60, 65, 66, 0.4)"
+              }
               style={styles.input}
               value={email}
               onChangeText={setEmail}
@@ -106,7 +112,11 @@ export default function SignupScreen() {
             <Text style={styles.label}>Username</Text>
             <TextInput
               placeholder="Choose your username"
-              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              placeholderTextColor={
+                mode === "dark"
+                  ? "rgba(232, 221, 212, 0.4)"
+                  : "rgba(60, 65, 66, 0.4)"
+              }
               style={styles.input}
               value={username}
               onChangeText={setUsername}
@@ -120,7 +130,11 @@ export default function SignupScreen() {
             <Text style={styles.label}>Password</Text>
             <TextInput
               placeholder="Create a password"
-              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              placeholderTextColor={
+                mode === "dark"
+                  ? "rgba(232, 221, 212, 0.4)"
+                  : "rgba(60, 65, 66, 0.4)"
+              }
               style={styles.input}
               secureTextEntry
               value={password}
