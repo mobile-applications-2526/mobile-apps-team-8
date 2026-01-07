@@ -156,7 +156,7 @@ export default function OnboardingScreen() {
             <Text style={localStyles.continueText}>
               Continue your journey ✨
             </Text>
-          )}{" "}
+          )}
         </TouchableOpacity>
         <Text
           style={[
