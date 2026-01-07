@@ -24,7 +24,10 @@ export function MoodJourney({ global }: { global: any }) {
 
   useEffect(() => {
     const loadEntries = async () => {
-      const username = (await AsyncStorage.getItem("loggedInUser")) || "guest";
+      const storedUser = await AsyncStorage.getItem("loggedInUser");
+      if (!storedUser) return;
+      const { username } = JSON.parse(storedUser);
+
       const data = getAllJournalEntriesForUser(username);
       setEntries(data);
     };
@@ -33,8 +36,8 @@ export function MoodJourney({ global }: { global: any }) {
 
   const startOfWeek = (date: Date) => {
     const d = new Date(date);
-    const day = d.getDay(); 
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   };
 
@@ -63,7 +66,7 @@ export function MoodJourney({ global }: { global: any }) {
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <View style={[global.card, styles.card]}>
+      <View style={[global.card, styles.card, { backgroundColor: theme.card }]}>
         <View style={styles.headerRow}>
           <Calendar size={18} color={theme.primary} />
           <Text style={[styles.cardTitle, { color: theme.foreground }]}>
@@ -86,11 +89,9 @@ export function MoodJourney({ global }: { global: any }) {
 }
 
 const styles = StyleSheet.create({
-  card: { padding: 16, borderRadius: 20, backgroundColor: "#fff" },
+  card: { padding: 16, borderRadius: 20 },
   headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   cardTitle: { marginLeft: 8, fontSize: 16, fontWeight: "600" },
   weekRow: { flexDirection: "row", justifyContent: "space-between" },
   dayContainer: { alignItems: "center", width: 40 },
 });
-
-

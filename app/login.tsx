@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useColorScheme,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -19,7 +20,8 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const styles = createLoginStyles("light");
+  const mode = useColorScheme() || "light";
+  const styles = createLoginStyles(mode);
 
   useEffect(() => {
     AsyncStorage.getItem("loggedInUser").then((user) => {
@@ -100,7 +102,11 @@ export default function LoginScreen() {
             <Text style={styles.label}>Email</Text>
             <TextInput
               placeholder="Enter your email"
-              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              placeholderTextColor={
+                mode === "dark"
+                  ? "rgba(232, 221, 212, 0.4)"
+                  : "rgba(60, 65, 66, 0.4)"
+              }
               style={styles.input}
               value={email}
               onChangeText={setEmail}
@@ -113,7 +119,11 @@ export default function LoginScreen() {
             <Text style={styles.label}>Password</Text>
             <TextInput
               placeholder="Enter your password"
-              placeholderTextColor="rgba(60, 65, 66, 0.4)"
+              placeholderTextColor={
+                mode === "dark"
+                  ? "rgba(232, 221, 212, 0.4)"
+                  : "rgba(60, 65, 66, 0.4)"
+              }
               style={styles.input}
               secureTextEntry
               autoCapitalize="none"
