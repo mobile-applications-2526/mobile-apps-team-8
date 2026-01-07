@@ -136,6 +136,7 @@ export default function SignupScreen() {
                   : "rgba(60, 65, 66, 0.4)"
               }
               style={styles.input}
+              autoCapitalize="none"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
