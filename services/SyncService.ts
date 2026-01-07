@@ -87,10 +87,25 @@ export const SyncService = {
       throw new Error("Invalid backend ID");
     }
 
+    const existing = db.getFirstSync<{ id: number }>(
+      `SELECT id FROM journal_entries WHERE backend_id = '${backendId.replace(
+        /'/g,
+        "''"
+      )}' LIMIT 1`
+    );
+
+    if (existing && existing.id !== localId) {
+      console.log(
+        `🗑️ Removing duplicate local entry ${localId} (backend_id already exists: ${backendId})`
+      );
+      db.execSync(`DELETE FROM journal_entries WHERE id = ${localId}`);
+      return;
+    }
+
     db.execSync(
       `UPDATE journal_entries 
-       SET synced = 1, backend_id = '${backendId.replace(/'/g, "''")}' 
-       WHERE id = ${localId}`
+     SET synced = 1, backend_id = '${backendId.replace(/'/g, "''")}' 
+     WHERE id = ${localId}`
     );
   },
 
@@ -187,7 +202,6 @@ export const SyncService = {
             console.log(
               `📥 Downloading entry: ${title} | Backend ID: ${backendId}`
             );
-
 
             db.execSync(
               `INSERT OR IGNORE INTO journal_entries 
