@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useColorScheme } from "react-native";
-import { GlobalStyles } from "@/styles/global";
+import { GlobalStyles, Colors } from "@/styles/global";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addJournalEntry } from "@/database";
 import { SyncService } from "@/services/SyncService";
@@ -29,6 +29,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const mode = useColorScheme() || "light";
   const styles = GlobalStyles(mode);
+  const theme = Colors[mode];
   const [selected, setSelected] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +51,7 @@ export default function OnboardingScreen() {
           day: "numeric",
         });
 
-        console.log("📝 Adding onboarding journal entry...");
+        console.log("📝 Adding mood check-in...");
         addJournalEntry({
           title: `Mood Check-in - ${dateStr} at ${timeStr}`,
           content: `Checked in feeling ${selected}.`,
@@ -63,19 +64,19 @@ export default function OnboardingScreen() {
         // Sync if online
         const online = await SyncService.isOnline();
         if (online) {
-          console.log("🔄 Syncing after onboarding entry...");
+          console.log("🔄 Syncing after check-in...");
           try {
             await SyncService.syncJournals(username);
-            console.log("✅ Onboarding sync complete");
+            console.log("✅ Sync complete");
           } catch (error) {
-            console.error("⚠️ Onboarding sync failed:", error);
+            console.error("⚠️ Sync failed:", error);
           }
         } else {
           console.log("📴 Offline, skipping sync");
         }
       }
     } catch (error) {
-      console.error("❌ Error in onboarding:", error);
+      console.error("❌ Error in check-in:", error);
     } finally {
       setIsLoading(false);
       router.replace("/(tabs)");
@@ -89,6 +90,7 @@ export default function OnboardingScreen() {
         flexGrow: 1,
         justifyContent: "center",
         height: "100%",
+        backgroundColor: theme.background,
       }}
       showsVerticalScrollIndicator={false}
     >
@@ -109,9 +111,12 @@ export default function OnboardingScreen() {
         style={{ marginTop: 40 }}
       >
         <Text
-          style={[styles.subtitle, { textAlign: "center", marginBottom: 16 }]}
+          style={[
+            styles.subtitle,
+            { textAlign: "center", marginBottom: 16, color: theme.foreground },
+          ]}
         >
-          How are you feeling today?
+          How are you feeling right now?
         </Text>
 
         <FlatList
@@ -119,7 +124,7 @@ export default function OnboardingScreen() {
           numColumns={2}
           keyExtractor={(item) => item.id}
           columnWrapperStyle={{ justifyContent: "space-between" }}
-          scrollEnabled={false} // let ScrollView handle scrolling
+          scrollEnabled={false}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
@@ -132,9 +137,16 @@ export default function OnboardingScreen() {
                 },
               ]}
               onPress={() => setSelected(item.id)}
+              disabled={isLoading}
             >
               <Text style={{ fontSize: 28 }}>{item.icon}</Text>
-              <Text style={{ fontSize: 14, color: "#333", marginTop: 4 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: mode === "dark" ? theme.foreground : "#333",
+                  marginTop: 4,
+                }}
+              >
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -147,24 +159,39 @@ export default function OnboardingScreen() {
         style={{ marginTop: 40, alignItems: "center" }}
       >
         <TouchableOpacity
-          style={localStyles.continueButton}
+          style={[
+            localStyles.continueButton,
+            { backgroundColor: theme.primary, opacity: isLoading ? 0.6 : 1 },
+          ]}
           onPress={handleContinue}
+          disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator style={localStyles.continueText} color="#fff" />
+            <ActivityIndicator color={theme.primaryForeground} />
           ) : (
-            <Text style={localStyles.continueText}>
-              Continue your journey ✨
+            <Text
+              style={[
+                localStyles.continueText,
+                { color: theme.primaryForeground },
+              ]}
+            >
+              Continue
             </Text>
           )}
         </TouchableOpacity>
         <Text
           style={[
             styles.subtitle,
-            { marginTop: 16, textAlign: "center", fontSize: 14 },
+            {
+              marginTop: 16,
+              textAlign: "center",
+              fontSize: 14,
+              color: theme.foreground,
+              opacity: 0.7,
+            },
           ]}
         >
-          A safe space for your thoughts and feelings
+          Track your mood throughout the day
         </Text>
       </Animated.View>
     </ScrollView>
@@ -184,7 +211,6 @@ const localStyles = StyleSheet.create({
     shadowRadius: 5,
   },
   continueButton: {
-    backgroundColor: "#A8B5A0",
     borderRadius: 30,
     paddingVertical: 16,
     alignItems: "center",
@@ -193,7 +219,6 @@ const localStyles = StyleSheet.create({
     shadowRadius: 10,
   },
   continueText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "500",
     paddingHorizontal: 24,
