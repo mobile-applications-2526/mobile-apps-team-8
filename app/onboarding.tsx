@@ -167,7 +167,10 @@ export default function OnboardingScreen() {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color={theme.primaryForeground} />
+            <ActivityIndicator
+              style={localStyles.continueText}
+              color={theme.primaryForeground}
+            />
           ) : (
             <Text
               style={[
