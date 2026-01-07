@@ -3,8 +3,9 @@ import NetInfo from "@react-native-community/netinfo";
 import { checkForDuplicate, db, removeDuplicateEntries } from "@/database";
 import { BackendJournalEntry } from "@/types";
 import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
+import { API_BASE_URL } from "@/config/api";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_URL = API_BASE_URL;
 
 export const SyncService = {
   async isOnline(): Promise<boolean> {
