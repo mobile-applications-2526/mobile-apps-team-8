@@ -15,6 +15,7 @@ interface ChatInputProps {
   handleSend: () => void;
   isRecording: boolean;
   toggleRecording: () => void;
+  isOnline?: boolean;
 }
 
 export function ChatInput({
@@ -23,6 +24,7 @@ export function ChatInput({
   handleSend,
   isRecording,
   toggleRecording,
+  isOnline = true,
 }: ChatInputProps) {
   const mode = useColorScheme() || "light";
   const theme = Colors[mode];
@@ -32,23 +34,36 @@ export function ChatInput({
       <TextInput
         style={[
           styles.input,
-          { color: theme.foreground, borderColor: theme.border },
+          {
+            color: theme.foreground,
+            borderColor: theme.border,
+            opacity: isOnline ? 1 : 0.5,
+          },
         ]}
         value={newMessage}
         onChangeText={setNewMessage}
-        placeholder="Share your thoughts..."
+        placeholder={isOnline ? "Share your thoughts..." : "You are offline"}
         placeholderTextColor={theme.border}
         onSubmitEditing={handleSend}
+        editable={isOnline}
       />
-      <TouchableOpacity onPress={toggleRecording} style={styles.iconButton}>
+      <TouchableOpacity
+        onPress={toggleRecording}
+        style={styles.iconButton}
+        disabled={!isOnline}
+      >
         {isRecording ? (
           <MicOff size={24} color="red" />
         ) : (
-          <Mic size={24} color={theme.primary} />
+          <Mic size={24} color={isOnline ? theme.primary : theme.border} />
         )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleSend} style={styles.iconButton}>
-        <Send size={24} color={theme.primary} />
+      <TouchableOpacity
+        onPress={handleSend}
+        style={styles.iconButton}
+        disabled={!isOnline}
+      >
+        <Send size={24} color={isOnline ? theme.primary : theme.border} />
       </TouchableOpacity>
     </View>
   );
@@ -62,8 +77,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#e5e5e5ff",
     backgroundColor: "white",
-    paddingBottom: 8, // Add consistent padding
-    width: "100%", // Ensure full width
+    paddingBottom: 8,
+    width: "100%",
   },
   input: {
     flex: 1,
