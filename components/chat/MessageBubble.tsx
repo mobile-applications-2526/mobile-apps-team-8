@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
-import { MotiView } from "moti";
+import { MotiView } from "@/moti";
 import { Colors } from "@/styles/global";
+import React from "react";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 
 interface MessageBubbleProps {
   text: string;
@@ -74,4 +74,3 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
 });
-

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
-import { MotiView } from "moti";
-import { Calendar } from "lucide-react-native";
-import { Colors } from "@/styles/global";
 import { getAllJournalEntriesForUser } from "@/database";
+import { MotiView } from "@/moti";
+import { Colors } from "@/styles/global";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Calendar } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 
 const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -33,8 +33,8 @@ export function MoodJourney({ global }: { global: any }) {
 
   const startOfWeek = (date: Date) => {
     const d = new Date(date);
-    const day = d.getDay(); 
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(d.setDate(diff));
   };
 
@@ -92,5 +92,3 @@ const styles = StyleSheet.create({
   weekRow: { flexDirection: "row", justifyContent: "space-between" },
   dayContainer: { alignItems: "center", width: 40 },
 });
-
-

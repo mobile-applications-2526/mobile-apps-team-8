@@ -1,8 +1,8 @@
+import { checkForDuplicate, db, removeDuplicateEntries } from "@/database";
+import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
+import { BackendJournalEntry } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
-import { checkForDuplicate, db, removeDuplicateEntries } from "@/database";
-import { BackendJournalEntry } from "@/types";
-import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -187,7 +187,6 @@ export const SyncService = {
             console.log(
               `📥 Downloading entry: ${title} | Backend ID: ${backendId}`
             );
-
 
             db.execSync(
               `INSERT OR IGNORE INTO journal_entries 

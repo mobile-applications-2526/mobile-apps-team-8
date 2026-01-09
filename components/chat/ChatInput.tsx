@@ -1,13 +1,13 @@
+import { Colors } from "@/styles/global";
+import { Mic, MicOff, Send } from "lucide-react-native";
 import React from "react";
 import {
-  View,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   useColorScheme,
+  View,
 } from "react-native";
-import { Send, Mic, MicOff } from "lucide-react-native";
-import { Colors } from "@/styles/global";
 
 interface ChatInputProps {
   newMessage: string;
@@ -34,6 +34,7 @@ export function ChatInput({
           styles.input,
           { color: theme.foreground, borderColor: theme.border },
         ]}
+        testID="chat-input"
         value={newMessage}
         onChangeText={setNewMessage}
         placeholder="Share your thoughts..."
@@ -47,7 +48,11 @@ export function ChatInput({
           <Mic size={24} color={theme.primary} />
         )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleSend} style={styles.iconButton}>
+      <TouchableOpacity
+        testID="chat-send-button"
+        onPress={handleSend}
+        style={styles.iconButton}
+      >
         <Send size={24} color={theme.primary} />
       </TouchableOpacity>
     </View>

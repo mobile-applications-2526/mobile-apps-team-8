@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -99,6 +98,7 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
+              testID="login-email-input"
               placeholder="Enter your email"
               placeholderTextColor="rgba(60, 65, 66, 0.4)"
               style={styles.input}
@@ -112,6 +112,7 @@ export default function LoginScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
+              testID="login-password-input"
               placeholder="Enter your password"
               placeholderTextColor="rgba(60, 65, 66, 0.4)"
               style={styles.input}
@@ -123,7 +124,10 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.forgotPassword}>
+          <TouchableOpacity
+            testID="login-forgot-password"
+            style={styles.forgotPassword}
+          >
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
 
@@ -131,6 +135,7 @@ export default function LoginScreen() {
             style={[styles.button]}
             onPress={handleLogin}
             activeOpacity={0.8}
+            testID="login-submit-button"
           >
             <Text style={styles.buttonText}>Log In</Text>
           </TouchableOpacity>
@@ -138,7 +143,10 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/signup")}>
+          <TouchableOpacity
+            testID="login-signup-link"
+            onPress={() => router.push("/signup")}
+          >
             <Text style={styles.signUpText}>Sign up</Text>
           </TouchableOpacity>
         </View>

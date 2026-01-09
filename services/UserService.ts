@@ -1,9 +1,8 @@
 import { User } from "@/types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const loginUser =  (user: User) => {
+const loginUser = (user: User) => {
   return fetch(`${API_URL}/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -11,14 +10,13 @@ const loginUser =  (user: User) => {
   });
 };
 
-const registerUser =  (user: User) => {
+const registerUser = (user: User) => {
   return fetch(`${API_URL}/users/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(user),
   });
 };
-
 
 const UserService = {
   loginUser,

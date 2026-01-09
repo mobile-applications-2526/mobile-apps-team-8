@@ -1,8 +1,7 @@
 import { Colors, GlobalStyles } from "@/styles/global";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Modal,
   Text,
@@ -15,17 +14,17 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import Header from "@/components/header/Header";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalSearch } from "@/components/journal/JournalSearch";
 import { MoodFilter } from "@/components/journal/MoodFilter";
 import { NewEntryForm } from "@/components/journal/NewEntryForm";
 import { getAllJournalEntriesForUser, initDB } from "@/database";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Header from "@/components/header/Header";
-import { BookOpen, RefreshCw } from "lucide-react-native";
-import { SyncService } from "@/services/SyncService";
-import Toast from "react-native-toast-message";
 import { moodConfig } from "@/hooks/mood-mapping";
+import { SyncService } from "@/services/SyncService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BookOpen } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 
 export interface JournalEntry {
   id: string;

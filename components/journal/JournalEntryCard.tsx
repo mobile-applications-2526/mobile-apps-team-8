@@ -1,10 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { MotiView } from "moti";
-import { Calendar, Clock } from "lucide-react-native";
-import { GlobalStyles, Colors } from "@/styles/global";
-import { Router } from "expo-router";
 import { JournalEntry } from "@/app/(tabs)/journal/index";
+import { MotiView } from "@/moti";
+import { Router } from "expo-router";
+import { Calendar, Clock } from "lucide-react-native";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface JournalEntryCardProps {
   entry: JournalEntry;

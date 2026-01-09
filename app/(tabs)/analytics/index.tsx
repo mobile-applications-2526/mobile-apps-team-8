@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, useColorScheme, View, Text } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { Colors, GlobalStyles } from "@/styles/global";
-import { getAllJournalEntriesForUser } from "@/database";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DailyTip } from "@/components/analytics/DailyTip";
 import { MoodJourney } from "@/components/analytics/MoodJourney";
 import { StreakCards } from "@/components/analytics/StreakCards";
-import { DailyTip } from "@/components/analytics/DailyTip";
 import Header from "@/components/header/Header";
-import { BarChart3 } from "lucide-react-native";
+import { getAllJournalEntriesForUser } from "@/database";
+import { Colors, GlobalStyles } from "@/styles/global";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
+import { BarChart3 } from "lucide-react-native";
+import React, { useState } from "react";
+import { ScrollView, StyleSheet, useColorScheme } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function AnalyticsScreen() {
   const mode = useColorScheme() || "light";
@@ -32,7 +35,7 @@ export default function AnalyticsScreen() {
         const rawEntries = await getAllJournalEntriesForUser(username);
 
         const parsedEntries = rawEntries
-          .map(e => ({
+          .map((e) => ({
             ...e,
             date: e.date instanceof Date ? e.date : new Date(e.date),
           }))
@@ -41,14 +44,16 @@ export default function AnalyticsScreen() {
         setEntries(parsedEntries);
 
         const today = new Date();
-        const dates = parsedEntries.map(e => e.date.toDateString());
+        const dates = parsedEntries.map((e) => e.date.toDateString());
         let currentStreak = 0;
         let longestStreak = 0;
         let tempStreak = 0;
 
         for (let i = dates.length - 1; i >= 0; i--) {
           const entryDate = new Date(dates[i]);
-          const diffDays = Math.floor((today.getTime() - entryDate.getTime()) / 86400000);
+          const diffDays = Math.floor(
+            (today.getTime() - entryDate.getTime()) / 86400000
+          );
           if (diffDays === currentStreak) {
             tempStreak++;
             currentStreak++;
@@ -61,24 +66,43 @@ export default function AnalyticsScreen() {
         if (tempStreak > longestStreak) longestStreak = tempStreak;
 
         setStreaks([
-          { label: "Current streak", value: `${currentStreak} day(s)`, color: "#A8B5A0", icon: "target" },
-          { label: "Longest streak", value: `${longestStreak} day(s)`, color: "#D4A59A", icon: "award" },
-          { label: "Total entries", value: `${parsedEntries.length}`, color: "#A8B5A0", icon: "zap" },
+          {
+            label: "Current streak",
+            value: `${currentStreak} day(s)`,
+            color: "#A8B5A0",
+            icon: "target",
+          },
+          {
+            label: "Longest streak",
+            value: `${longestStreak} day(s)`,
+            color: "#D4A59A",
+            icon: "award",
+          },
+          {
+            label: "Total entries",
+            value: `${parsedEntries.length}`,
+            color: "#A8B5A0",
+            icon: "zap",
+          },
         ]);
 
         const weekMap: Record<string, number[]> = {};
-        parsedEntries.forEach(e => {
+        parsedEntries.forEach((e) => {
           const weekKey = `${e.date.getFullYear()}-W${getWeekNumber(e.date)}`;
           if (!weekMap[weekKey]) weekMap[weekKey] = [];
-          const moodValue = typeof e.mood === "string" ? moodToNumber(e.mood) : Number(e.mood);
+          const moodValue =
+            typeof e.mood === "string" ? moodToNumber(e.mood) : Number(e.mood);
           weekMap[weekKey].push(moodValue);
         });
 
         const journey = Object.entries(weekMap)
-          .slice(-5) 
+          .slice(-5)
           .map(([week, moods]) => ({
             week,
-            avg: Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10,
+            avg:
+              Math.round(
+                (moods.reduce((a, b) => a + b, 0) / moods.length) * 10
+              ) / 10,
             color: "#A8E6CF",
           }));
         setMoodJourney(journey);
@@ -89,10 +113,13 @@ export default function AnalyticsScreen() {
 
       loadAnalytics();
     }, [])
-);
+  );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={["right", "left"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      edges={["right", "left"]}
+    >
       <Header
         title="Analytics"
         subtitle="Track your progress and insights"
@@ -115,7 +142,9 @@ function getWeekNumber(date: Date) {
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + 4 - (d.getDay() || 7));
   const yearStart = new Date(d.getFullYear(), 0, 1);
-  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  const weekNo = Math.ceil(
+    ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+  );
   return weekNo;
 }
 
@@ -132,7 +161,7 @@ function moodToNumber(mood: string) {
 }
 
 function generateInsights(entries: any[]) {
-  return entries.slice(-4).map(e => ({
+  return entries.slice(-4).map((e) => ({
     title: e.title || "Entry",
     description: e.content.slice(0, 50) || "No content",
     icon: "📝",
