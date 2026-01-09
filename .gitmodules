@@ -1,0 +1,3 @@
+[submodule "craftmanship"]
+	path = craftmanship
+	url = git@github.com:RobinGhysUCLL/craftmanship.git
