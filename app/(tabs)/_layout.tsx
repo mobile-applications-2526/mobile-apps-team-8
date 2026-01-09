@@ -43,6 +43,13 @@ export default function TabLayout() {
               color={color}
             />
           ),
+          tabBarButton: (props) => (
+            <HapticTab
+              {...props}
+              testID="tab-chat"
+              accessibilityLabel="Chat tab"
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -51,6 +58,13 @@ export default function TabLayout() {
           title: "Journal",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="book.closed.fill" color={color} />
+          ),
+          tabBarButton: (props) => (
+            <HapticTab
+              {...props}
+              testID="tab-journal"
+              accessibilityLabel="Journal tab"
+            />
           ),
         }}
       />

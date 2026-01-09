@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
-import { MotiView } from "moti";
+import { MotiView } from "@/moti";
 import { Colors } from "@/styles/global";
+import React from "react";
+import { StyleSheet, Text, useColorScheme } from "react-native";
 
 const tips = [
   "Take 5 minutes to breathe and reflect before journaling.",

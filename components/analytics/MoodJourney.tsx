@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, useColorScheme } from "react-native";
-import { MotiView } from "moti";
-import { Calendar } from "lucide-react-native";
-import { Colors } from "@/styles/global";
 import { getAllJournalEntriesForUser } from "@/database";
+import { MotiView } from "@/moti";
+import { Colors } from "@/styles/global";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Calendar } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, useColorScheme, View } from "react-native";
 
 const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 

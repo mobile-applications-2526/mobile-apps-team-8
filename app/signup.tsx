@@ -1,3 +1,4 @@
+import UserService from "@/services/UserService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -10,9 +11,8 @@ import {
   View,
   useColorScheme,
 } from "react-native";
-import { createLoginStyles } from "../styles/login.styles";
-import UserService from "@/services/UserService";
 import Toast from "react-native-toast-message";
+import { createLoginStyles } from "../styles/login.styles";
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -68,19 +68,23 @@ export default function SignupScreen() {
           position: "top",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Signup error:", error);
+
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Something went wrong during signup.",
+        text1: "Signup error",
+        text2:
+          error?.message ??
+          (typeof error === "string" ? error : JSON.stringify(error)),
         position: "top",
       });
-      console.error(error);
     }
   };
 
   return (
     <KeyboardAvoidingView
+      testID="signup-screen"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
@@ -94,6 +98,7 @@ export default function SignupScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
+              testID="signup-email-input"
               placeholder="Use your email address"
               placeholderTextColor={
                 mode === "dark"
@@ -108,9 +113,11 @@ export default function SignupScreen() {
               underlineColorAndroid="transparent"
             />
           </View>
+
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Username</Text>
             <TextInput
+              testID="signup-username-input"
               placeholder="Choose your username"
               placeholderTextColor={
                 mode === "dark"
@@ -121,7 +128,6 @@ export default function SignupScreen() {
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
-              keyboardType="email-address"
               underlineColorAndroid="transparent"
             />
           </View>
@@ -129,6 +135,7 @@ export default function SignupScreen() {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
+              testID="signup-password-input"
               placeholder="Create a password"
               placeholderTextColor={
                 mode === "dark"
@@ -145,6 +152,7 @@ export default function SignupScreen() {
           </View>
 
           <TouchableOpacity
+            testID="signup-submit-button"
             style={[styles.button]}
             onPress={handleSignup}
             activeOpacity={0.8}

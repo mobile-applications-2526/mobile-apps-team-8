@@ -1,20 +1,19 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
-import { useRouter } from "expo-router";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { useColorScheme } from "react-native";
-import { GlobalStyles, Colors } from "@/styles/global";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addJournalEntry } from "@/database";
 import { SyncService } from "@/services/SyncService";
+import { Colors, GlobalStyles } from "@/styles/global";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+} from "react-native";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 const emotions = [
   { id: "happy", label: "Happy", color: "#FFE66D", icon: "😊" },
@@ -85,6 +84,7 @@ export default function OnboardingScreen() {
 
   return (
     <ScrollView
+      testID="onboarding-screen"
       contentContainerStyle={{
         padding: 24,
         flexGrow: 1,
@@ -120,6 +120,7 @@ export default function OnboardingScreen() {
         </Text>
 
         <FlatList
+          testID="onboarding-emotions-list"
           data={emotions}
           numColumns={2}
           keyExtractor={(item) => item.id}
@@ -127,6 +128,7 @@ export default function OnboardingScreen() {
           scrollEnabled={false}
           renderItem={({ item }) => (
             <TouchableOpacity
+              testID={`onboarding-emotion-${item.id}`}
               style={[
                 localStyles.emotionButton,
                 {
@@ -138,6 +140,8 @@ export default function OnboardingScreen() {
               ]}
               onPress={() => setSelected(item.id)}
               disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel={`Select emotion ${item.id}`}
             >
               <Text style={{ fontSize: 28 }}>{item.icon}</Text>
               <Text
@@ -159,15 +163,22 @@ export default function OnboardingScreen() {
         style={{ marginTop: 40, alignItems: "center" }}
       >
         <TouchableOpacity
+          testID="onboarding-continue-button"
           style={[
             localStyles.continueButton,
-            { backgroundColor: theme.primary, opacity: isLoading ? 0.6 : 1 },
+            {
+              backgroundColor: theme.primary,
+              opacity: isLoading ? 0.6 : 1,
+            },
           ]}
           onPress={handleContinue}
           disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="Continue onboarding"
         >
           {isLoading ? (
             <ActivityIndicator
+              testID="onboarding-continue-loading"
               style={localStyles.continueText}
               color={theme.primaryForeground}
             />
@@ -182,6 +193,7 @@ export default function OnboardingScreen() {
             </Text>
           )}
         </TouchableOpacity>
+
         <Text
           style={[
             styles.subtitle,
