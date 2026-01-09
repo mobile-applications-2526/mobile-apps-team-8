@@ -44,6 +44,13 @@ export default function ChatScreen() {
   useEffect(() => {
     const loadMessages = async () => {
       try {
+        const welcomeMessage: Message = {
+          id: "welcome",
+          text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
+          isUser: false,
+          timestamp: new Date(0),
+        };
+
         const rawMessages = await ChatService.getMessages();
 
         const messages = rawMessages.messages.map((m: any) => ({
@@ -53,17 +60,7 @@ export default function ChatScreen() {
           timestamp: new Date(m.timestamp),
         }));
 
-        if (messages.length === 0) {
-          const welcomeMessage: Message = {
-            id: "welcome",
-            text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
-            isUser: false,
-            timestamp: new Date(),
-          };
-          setMessages([welcomeMessage]);
-        } else {
-          setMessages(messages);
-        }
+        setMessages([welcomeMessage, ...messages]);
       } catch (error) {
         console.error("Error fetching messages:", error);
         const welcomeMessage: Message = {
