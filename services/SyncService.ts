@@ -72,14 +72,22 @@ export const SyncService = {
         `Failed to upload journal: ${response.status} - ${errorText}`
       );
     }
-
     const data = await response.json();
-
-    if (!data.id) {
-      throw new Error("Backend did not return an ID");
+    console.log("📥 Backend response:", data);
+    let backendId: string;
+    if (typeof data.id === "object" && data.id?.id) {
+      backendId = String(data.id.id);
+    } else if (typeof data.id === "string") {
+      backendId = data.id;
+    } else if (data._id) {
+      backendId = String(data._id);
+    } else {
+      throw new Error("Backend did not return a valid ID");
     }
 
-    return String(data.id);
+    console.log("🔑 Backend ID:", backendId);
+
+    return backendId;
   },
 
   markAsSynced(localId: number, backendId: string) {
