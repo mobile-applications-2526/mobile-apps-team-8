@@ -9,6 +9,7 @@ import { HomeQuickActions } from "@/components/home/QuickActions";
 import { HomeRecentReflection } from "@/components/home/RecentReflection";
 import { HomeWeeklyMood } from "@/components/home/WeeklyMood";
 import { getAllJournalEntriesForUser } from "@/database";
+import { SyncService } from "@/services/SyncService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { JournalEntry } from "./journal";
 
@@ -83,13 +84,58 @@ export default function HomeScreen() {
     setRecentInsights(insights);
   };
 
+  // Initial load on mount - sync first, then load data
   useEffect(() => {
-    loadHomeData();
-  }, [theme.primary]);
+    const initialize = async () => {
+      const storedUser = await AsyncStorage.getItem("loggedInUser");
+      if (!storedUser) return;
+      const { username } = JSON.parse(storedUser);
 
+      console.log("🏠 Loading home screen data...");
+
+      // First sync with backend if online
+      const online = await SyncService.isOnline();
+      if (online) {
+        console.log("🔄 Syncing journals for home screen...");
+        try {
+          await SyncService.syncJournals(username);
+          console.log("✅ Home screen sync complete");
+        } catch (error) {
+          console.error("⚠️ Home screen sync failed:", error);
+        }
+      }
+
+      // Then load data
+      await loadHomeData();
+    };
+
+    initialize();
+  }, []);
+
+  // Reload on focus
   useFocusEffect(
     React.useCallback(() => {
-      loadHomeData();
+      const syncAndLoad = async () => {
+        const storedUser = await AsyncStorage.getItem("loggedInUser");
+        if (!storedUser) return;
+        const { username } = JSON.parse(storedUser);
+
+        // Load local data immediately
+        await loadHomeData();
+
+        // Then sync in background
+        const online = await SyncService.isOnline();
+        if (online) {
+          try {
+            await SyncService.syncJournals(username);
+            await loadHomeData();
+          } catch (error) {
+            console.error("⚠️ Focus sync failed:", error);
+          }
+        }
+      };
+
+      syncAndLoad();
     }, [theme.primary])
   );
 

@@ -6,17 +6,21 @@ import {
   Platform,
   useColorScheme,
   View,
+  Text,
+  StyleSheet,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { Bot } from "lucide-react-native";
+import { Bot, WifiOff } from "lucide-react-native";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { MessageList } from "@/components/chat/MessageList";
 import { StatusBar } from "expo-status-bar";
 import Header from "@/components/header/Header";
-import {ChatService} from "@/services/ChatService";
+import { ChatService } from "@/services/ChatService";
+import { SyncService } from "@/services/SyncService";
+import { MotiView } from "moti";
 
 export interface Message {
   id: string;
@@ -31,16 +35,22 @@ export default function ChatScreen() {
   const global = GlobalStyles(mode);
   const insets = useSafeAreaInsets();
 
-
+  const [isOnline, setIsOnline] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadMessages = async () => {
       try {
+        const welcomeMessage: Message = {
+          id: "welcome",
+          text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
+          isUser: false,
+          timestamp: new Date(0),
+        };
+
         const rawMessages = await ChatService.getMessages();
 
         const messages = rawMessages.messages.map((m: any) => ({
@@ -49,16 +59,36 @@ export default function ChatScreen() {
           isUser: !m.ai,
           timestamp: new Date(m.timestamp),
         }));
-        setMessages(messages);
+
+        setMessages([welcomeMessage, ...messages]);
       } catch (error) {
         console.error("Error fetching messages:", error);
+        const welcomeMessage: Message = {
+          id: "welcome",
+          text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages([welcomeMessage]);
       }
     };
     loadMessages();
   }, []);
 
+  useEffect(() => {
+    const checkConnection = async () => {
+      const online = await SyncService.isOnline();
+      setIsOnline(online);
+    };
+
+    checkConnection();
+    const interval = setInterval(checkConnection, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSend = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !isOnline) return;
     setLoading(true);
 
     const userMessage: Message = {
@@ -92,11 +122,11 @@ export default function ChatScreen() {
   return (
     <SafeAreaView
       style={{
-        flex: 1, 
+        flex: 1,
         backgroundColor: theme.background,
         borderWidth: 0,
       }}
-      edges={["right", "left"]} 
+      edges={["right", "left"]}
     >
       <Header
         title="AI Companion"
@@ -111,6 +141,15 @@ export default function ChatScreen() {
         backgroundColor="transparent"
         translucent={true}
       />
+
+      {!isOnline && (
+        <View style={[styles.offlineBanner, { backgroundColor: theme.accent }]}>
+          <WifiOff size={16} color="#fff" />
+          <Text style={styles.offlineText}>
+            You are offline. Chat is unavailable.
+          </Text>
+        </View>
+      )}
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -127,8 +166,29 @@ export default function ChatScreen() {
           handleSend={handleSend}
           isRecording={isRecording}
           toggleRecording={toggleRecording}
+          isOnline={isOnline}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  offlineBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+  },
+  offlineText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+    marginLeft: 8,
+    flexShrink: 1,
+  },
+});

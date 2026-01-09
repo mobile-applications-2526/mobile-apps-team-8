@@ -1,10 +1,11 @@
+import { API_BASE_URL } from "@/config/api";
 import { checkForDuplicate, db, removeDuplicateEntries } from "@/database";
 import { moodMapping, moodReverseMapping } from "@/hooks/mood-mapping";
 import { BackendJournalEntry } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_URL = API_BASE_URL;
 
 export const SyncService = {
   async isOnline(): Promise<boolean> {
@@ -71,14 +72,22 @@ export const SyncService = {
         `Failed to upload journal: ${response.status} - ${errorText}`
       );
     }
-
     const data = await response.json();
-
-    if (!data.id) {
-      throw new Error("Backend did not return an ID");
+    console.log("📥 Backend response:", data);
+    let backendId: string;
+    if (typeof data.id === "object" && data.id?.id) {
+      backendId = String(data.id.id);
+    } else if (typeof data.id === "string") {
+      backendId = data.id;
+    } else if (data._id) {
+      backendId = String(data._id);
+    } else {
+      throw new Error("Backend did not return a valid ID");
     }
 
-    return String(data.id);
+    console.log("🔑 Backend ID:", backendId);
+
+    return backendId;
   },
 
   markAsSynced(localId: number, backendId: string) {
@@ -87,10 +96,25 @@ export const SyncService = {
       throw new Error("Invalid backend ID");
     }
 
+    const existing = db.getFirstSync<{ id: number }>(
+      `SELECT id FROM journal_entries WHERE backend_id = '${backendId.replace(
+        /'/g,
+        "''"
+      )}' LIMIT 1`
+    );
+
+    if (existing && existing.id !== localId) {
+      console.log(
+        `🗑️ Removing duplicate local entry ${localId} (backend_id already exists: ${backendId})`
+      );
+      db.execSync(`DELETE FROM journal_entries WHERE id = ${localId}`);
+      return;
+    }
+
     db.execSync(
       `UPDATE journal_entries 
-       SET synced = 1, backend_id = '${backendId.replace(/'/g, "''")}' 
-       WHERE id = ${localId}`
+     SET synced = 1, backend_id = '${backendId.replace(/'/g, "''")}' 
+     WHERE id = ${localId}`
     );
   },
 

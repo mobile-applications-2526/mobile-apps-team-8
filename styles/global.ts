@@ -80,7 +80,6 @@ export const GlobalStyles = (mode: ThemeMode = 'light') =>
       backgroundColor: Colors[mode].card,
       borderRadius: 12,
       padding: 16,
-      width: '90%',
       shadowColor: '#000',
       shadowOpacity: 0.1,
       shadowRadius: 6,

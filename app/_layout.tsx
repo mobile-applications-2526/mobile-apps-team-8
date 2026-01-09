@@ -8,6 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { initDB } from '@/database';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -31,6 +32,10 @@ export default function RootLayout() {
         else router.replace('/login');
       }, 50); // 50ms delay anders crashed die
     });
+  }, []);
+
+  useEffect(() => {
+    initDB(); 
   }, []);
 
   if (!isReady) {

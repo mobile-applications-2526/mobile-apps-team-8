@@ -1,9 +1,11 @@
 import { addJournalEntry } from "@/database";
-import { GlobalStyles } from "@/styles/global";
+import { SyncService } from "@/services/SyncService";
+import { Colors, GlobalStyles } from "@/styles/global";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -26,22 +28,58 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const mode = useColorScheme() || "light";
   const styles = GlobalStyles(mode);
+  const theme = Colors[mode];
   const [selected, setSelected] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleContinue = async () => {
-    if (selected) {
-      const username = (await AsyncStorage.getItem("loggedInUser")) || "guest";
+    setIsLoading(true);
 
-      addJournalEntry({
-        title: "Startup Mood",
-        content: "",
-        mood: selected,
-        tags: ["startup"],
-        date: Date.now(),
-        username,
-      });
+    try {
+      if (selected) {
+        const storedUser = await AsyncStorage.getItem("loggedInUser");
+        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+        const username = parsedUser?.username || "guest";
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const dateStr = now.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+
+        console.log("📝 Adding mood check-in...");
+        addJournalEntry({
+          title: `Mood Check-in - ${dateStr} at ${timeStr}`,
+          content: `Checked in feeling ${selected}.`,
+          mood: selected,
+          tags: ["check-in"],
+          date: Date.now(),
+          username,
+        });
+
+        // Sync if online
+        const online = await SyncService.isOnline();
+        if (online) {
+          console.log("🔄 Syncing after check-in...");
+          try {
+            await SyncService.syncJournals(username);
+            console.log("✅ Sync complete");
+          } catch (error) {
+            console.error("⚠️ Sync failed:", error);
+          }
+        } else {
+          console.log("📴 Offline, skipping sync");
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error in check-in:", error);
+    } finally {
+      setIsLoading(false);
+      router.replace("/(tabs)");
     }
-    router.replace("/(tabs)");
   };
 
   return (
@@ -52,6 +90,7 @@ export default function OnboardingScreen() {
         flexGrow: 1,
         justifyContent: "center",
         height: "100%",
+        backgroundColor: theme.background,
       }}
       showsVerticalScrollIndicator={false}
     >
@@ -72,17 +111,21 @@ export default function OnboardingScreen() {
         style={{ marginTop: 40 }}
       >
         <Text
-          style={[styles.subtitle, { textAlign: "center", marginBottom: 16 }]}
+          style={[
+            styles.subtitle,
+            { textAlign: "center", marginBottom: 16, color: theme.foreground },
+          ]}
         >
-          How are you feeling today?
+          How are you feeling right now?
         </Text>
 
         <FlatList
+          testID="onboarding-emotions-list"
           data={emotions}
           numColumns={2}
           keyExtractor={(item) => item.id}
           columnWrapperStyle={{ justifyContent: "space-between" }}
-          scrollEnabled={false} // let ScrollView handle scrolling
+          scrollEnabled={false}
           renderItem={({ item }) => (
             <TouchableOpacity
               testID={`onboarding-emotion-${item.id}`}
@@ -96,9 +139,18 @@ export default function OnboardingScreen() {
                 },
               ]}
               onPress={() => setSelected(item.id)}
+              disabled={isLoading}
+              accessibilityRole="button"
+              accessibilityLabel={`Select emotion ${item.id}`}
             >
               <Text style={{ fontSize: 28 }}>{item.icon}</Text>
-              <Text style={{ fontSize: 14, color: "#333", marginTop: 4 }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: mode === "dark" ? theme.foreground : "#333",
+                  marginTop: 4,
+                }}
+              >
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -112,19 +164,49 @@ export default function OnboardingScreen() {
       >
         <TouchableOpacity
           testID="onboarding-continue-button"
-          style={localStyles.continueButton}
-          disabled={!selected}
+          style={[
+            localStyles.continueButton,
+            {
+              backgroundColor: theme.primary,
+              opacity: isLoading ? 0.6 : 1,
+            },
+          ]}
           onPress={handleContinue}
+          disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="Continue onboarding"
         >
-          <Text style={localStyles.continueText}>Continue your journey ✨</Text>
+          {isLoading ? (
+            <ActivityIndicator
+              testID="onboarding-continue-loading"
+              style={localStyles.continueText}
+              color={theme.primaryForeground}
+            />
+          ) : (
+            <Text
+              style={[
+                localStyles.continueText,
+                { color: theme.primaryForeground },
+              ]}
+            >
+              Continue
+            </Text>
+          )}
         </TouchableOpacity>
+
         <Text
           style={[
             styles.subtitle,
-            { marginTop: 16, textAlign: "center", fontSize: 14 },
+            {
+              marginTop: 16,
+              textAlign: "center",
+              fontSize: 14,
+              color: theme.foreground,
+              opacity: 0.7,
+            },
           ]}
         >
-          A safe space for your thoughts and feelings
+          Track your mood throughout the day
         </Text>
       </Animated.View>
     </ScrollView>
@@ -144,7 +226,6 @@ const localStyles = StyleSheet.create({
     shadowRadius: 5,
   },
   continueButton: {
-    backgroundColor: "#A8B5A0",
     borderRadius: 30,
     paddingVertical: 16,
     alignItems: "center",
@@ -153,7 +234,6 @@ const localStyles = StyleSheet.create({
     shadowRadius: 10,
   },
   continueText: {
-    color: "#fff",
     fontSize: 18,
     fontWeight: "500",
     paddingHorizontal: 24,

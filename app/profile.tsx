@@ -33,42 +33,47 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView
+      testID="profile-screen"
       style={{
         flex: 1,
         backgroundColor: mode === "light" ? "#F5F1E8" : "#1A1B2E",
       }}
     >
       <TouchableOpacity
+        testID="profile-back-button"
         onPress={() => router.back()}
         style={{ marginRight: 12 }}
       >
         <ArrowLeft size={24} color={theme.foreground} />
       </TouchableOpacity>
+
       <View style={global.container}>
-        <View style={styles.avatarContainer}>
+        <View testID="profile-avatar" style={styles.avatarContainer}>
           <Text style={styles.avatarText}>
             {username?.[0].toUpperCase() || "U"}
           </Text>
         </View>
 
-        <Text style={styles.username} testID="profile-username">
+        <Text testID="profile-username" style={styles.username}>
           {username}
         </Text>
 
-        <Pressable style={[styles.button, styles.buttonColor()]}>
+        <Pressable
+          testID="profile-edit-button"
+          style={[styles.button, styles.buttonColor()]}
+        >
           <Text style={styles.buttonText}>Edit Profile</Text>
         </Pressable>
 
         <Pressable
+          testID="profile-logout-button"
           style={[styles.button, styles.buttonColor(true)]}
           onPress={async () => {
             await AsyncStorage.removeItem("loggedInUser");
             router.replace("/login");
           }}
         >
-          <Text style={styles.buttonText} testID="profile-logout-button">
-            Log Out
-          </Text>
+          <Text style={styles.buttonText}>Log Out</Text>
         </Pressable>
       </View>
     </SafeAreaView>

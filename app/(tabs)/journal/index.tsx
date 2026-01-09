@@ -348,11 +348,11 @@ export default function JournalScreen() {
             }}
           >
             <NewEntryForm
-              onEntryAdded={() => {
-                refreshEntries();
-                setModalVisible(false);
+              onEntryAdded={async () => {
                 if (username) {
-                  handleSync(username, true);
+                  refreshEntries();
+                  setModalVisible(false);
+                  await handleSync(username, true);
                 }
               }}
               onCancel={() => setModalVisible(false)}

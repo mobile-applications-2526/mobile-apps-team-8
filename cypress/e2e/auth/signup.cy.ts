@@ -45,16 +45,65 @@
 //   });
 // });
 
+// describe("Signup flow", () => {
+//   beforeEach(() => {
+//     cy.logout();
+
+//     // CORS
+//     cy.intercept("OPTIONS", "**/users/signup", {
+//       statusCode: 200,
+//     });
+
+//     cy.intercept("POST", "**/users/signup", {
+//       statusCode: 200,
+//       body: {
+//         id: "1",
+//         username: "testuser123",
+//         email: "testuser123@example.com",
+//       },
+//     }).as("signup");
+
+//     cy.intercept("POST", "**/users/login", {
+//       statusCode: 200,
+//       body: {
+//         token: "test-token",
+//         username: "testuser123",
+//         email: "testuser123@example.com",
+//       },
+//     }).as("login");
+
+//     cy.visit("/login");
+//   });
+
+//   it("navigates from login to signup and signs up successfully", () => {
+//     cy.logout();
+//     cy.visit("/login");
+
+//     cy.getByTestId("login-signup-link").click();
+//     cy.getByTestId("signup-screen").should("exist");
+
+//     cy.getByTestId("signup-username-input").type("testuser123");
+//     cy.getByTestId("signup-email-input").type("testuser123@example.com");
+//     cy.getByTestId("signup-password-input").type("Password123!");
+
+//     cy.getByTestId("signup-submit-button").click();
+
+//     cy.wait("@signup");
+//   });
+// });
 describe("Signup flow", () => {
   beforeEach(() => {
     cy.logout();
 
-    // CORS
-    cy.intercept("OPTIONS", "**/users/signup", {
-      statusCode: 200,
+    cy.intercept("OPTIONS", "https://craftmanship.robinghys.com/users/signup", {
+      statusCode: 204,
     });
 
-    cy.intercept("POST", "**/users/signup", {
+    cy.intercept("OPTIONS", "https://craftmanship.robinghys.com/users/login", {
+      statusCode: 204,
+    });
+
+    cy.intercept("POST", "https://craftmanship.robinghys.com/users/signup", {
       statusCode: 200,
       body: {
         id: "1",
@@ -63,7 +112,7 @@ describe("Signup flow", () => {
       },
     }).as("signup");
 
-    cy.intercept("POST", "**/users/login", {
+    cy.intercept("POST", "https://craftmanship.robinghys.com/users/login", {
       statusCode: 200,
       body: {
         token: "test-token",
@@ -71,25 +120,23 @@ describe("Signup flow", () => {
         email: "testuser123@example.com",
       },
     }).as("login");
-
-    cy.visit("/login");
   });
 
-  it("navigates from login to signup and signs up successfully", () => {
-    cy.logout();
+  it("navigates to signup and signs up successfully", () => {
     cy.visit("/login");
 
     cy.getByTestId("login-signup-link").click();
     cy.getByTestId("signup-screen").should("exist");
 
-    cy.getByTestId("signup-username-input").type("testuser123");
     cy.getByTestId("signup-email-input").type("testuser123@example.com");
+    cy.getByTestId("signup-username-input").type("testuser123");
     cy.getByTestId("signup-password-input").type("Password123!");
 
     cy.getByTestId("signup-submit-button").click();
 
-    cy.wait("@signup");
-    cy.wait("@login");
-    // cy.url({ timeout: 6000 }).should("include", "/onboarding");
+    cy.wait("@signup", { timeout: 15000 });
+    cy.wait("@login", { timeout: 15000 });
+
+    cy.url({ timeout: 20000 }).should("include", "/onboarding");
   });
 });

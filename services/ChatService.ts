@@ -1,6 +1,7 @@
+import { API_BASE_URL } from "@/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const API_URL = API_BASE_URL;
 
 export const ChatService = {
   async getAuthToken(): Promise<string | null> {
