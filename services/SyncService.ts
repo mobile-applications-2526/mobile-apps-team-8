@@ -181,7 +181,15 @@ export const SyncService = {
             let dateInMs: number;
 
             if (typeof backendEntry.date === "string") {
-              const parsed = new Date(backendEntry.date);
+              let dateString = backendEntry.date;
+              if (
+                !dateString.endsWith("Z") &&
+                !dateString.includes("+") &&
+                !dateString.includes("-", 10)
+              ) {
+                dateString += "Z";
+              }
+              const parsed = new Date(dateString);
               dateInMs = parsed.getTime();
             } else if (backendEntry.date < 100000) {
               dateInMs = backendEntry.date * 24 * 60 * 60 * 1000;
