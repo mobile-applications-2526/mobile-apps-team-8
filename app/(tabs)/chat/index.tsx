@@ -52,9 +52,27 @@ export default function ChatScreen() {
           isUser: !m.ai,
           timestamp: new Date(m.timestamp),
         }));
-        setMessages(messages);
+
+        if (messages.length === 0) {
+          const welcomeMessage: Message = {
+            id: "welcome",
+            text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
+            isUser: false,
+            timestamp: new Date(),
+          };
+          setMessages([welcomeMessage]);
+        } else {
+          setMessages(messages);
+        }
       } catch (error) {
         console.error("Error fetching messages:", error);
+        const welcomeMessage: Message = {
+          id: "welcome",
+          text: "Hi there! I'm here to listen and support you. How are you feeling today? Feel free to share anything that's on your mind.",
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages([welcomeMessage]);
       }
     };
     loadMessages();
